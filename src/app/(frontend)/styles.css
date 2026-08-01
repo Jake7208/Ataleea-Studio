@@ -1,0 +1,33 @@
+/*
+ * Intentionally (almost) empty — this template ships unstyled so each site
+ * starts its design from zero. The markup already carries class hooks:
+ *
+ *   layout      .container .section .section-head .page-intro .empty-state
+ *   header/nav  .site-header .site-nav .nav-link
+ *   footer      .site-footer .footer-grid .footer-col .footer-bottom
+ *   home        .hero .hero-latest .about-grid
+ *   cards       .work-card .work-card-meta .journal-row .journal-thumb
+ *   gallery     .gallery-grid .gallery-item .gallery-filter .tag .tag-active
+ *               .lightbox .lightbox-stage .lightbox-info .lightbox-thumbs
+ *   articles    .post-hero .post-info .post-body .rich-text .media-frame
+ *   comments    .comments .comment .comment-form .comment-like
+ *   contact     .contact-form .contact-field .contact-error
+ *   testimonials .testimonial .testimonial-quote .testimonial-who
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
