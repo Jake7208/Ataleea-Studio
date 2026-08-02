@@ -31,7 +31,7 @@ export default function JournalList({ posts }: { posts: JournalListPost[] }) {
             })
           : null
         return (
-          <Link key={post.id} href={`/blog/${post.slug}`} className="journal-row">
+          <Link key={post.id} href={`/blog/${post.slug}`} className="journal-row" data-reveal>
             {media && (
               <div className="journal-thumb">
                 <Media

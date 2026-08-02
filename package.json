@@ -12,6 +12,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "screenshot": "cross-env NODE_OPTIONS=--no-deprecation node scripts/screenshot.mjs",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
   },
   "dependencies": {
@@ -19,26 +20,33 @@
     "@payloadcms/email-resend": "3.85.2",
     "@payloadcms/next": "3.85.2",
     "@payloadcms/richtext-lexical": "3.85.2",
-    "@payloadcms/storage-s3": "^3.85.2",
+    "@payloadcms/storage-s3": "3.85.2",
     "@payloadcms/ui": "3.85.2",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
     "graphql": "^16.8.1",
-    "next": "16.2.6",
+    "lenis": "^1.3.25",
+    "next": "16.2.12",
     "payload": "3.85.2",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "resend": "^6.17.0",
-    "sharp": "0.34.2"
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@types/node": "22.19.9",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "eslint": "^9.16.0",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.2.12",
+    "playwright": "^1.62.1",
     "prettier": "^3.4.2",
     "typescript": "5.7.3"
+  },
+  "overrides": {
+    "mongoose": "^8.24.2",
+    "postcss": "^8.5.18",
+    "sharp": "^0.35.3"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",

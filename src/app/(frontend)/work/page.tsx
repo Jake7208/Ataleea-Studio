@@ -10,7 +10,7 @@ export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Work',
-  description: 'WORK_PAGE_DESCRIPTION',
+  description: 'Selected projects — websites, photography and local search for trades and service companies.',
 }
 
 export default async function WorkPage() {
@@ -29,8 +29,10 @@ export default async function WorkPage() {
   return (
     <>
       <section className="page-intro container">
-        <p className="eyebrow">Work / {totalDocs}</p>
-        <h1>WORK_PAGE_HEADLINE</h1>
+        <div data-reveal>
+          <p className="eyebrow">Work / {totalDocs}</p>
+          <h1>Projects built to be looked at.</h1>
+        </div>
       </section>
 
       <section className="container">

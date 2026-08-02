@@ -79,8 +79,10 @@ export default async function GalleryPage({ searchParams }: Props) {
   return (
     <>
       <section className="page-intro container">
-        <p className="eyebrow">Gallery / {tagged.length}</p>
-        <h1>GALLERY_PAGE_HEADLINE</h1>
+        <div data-reveal>
+          <p className="eyebrow">Gallery / {tagged.length}</p>
+          <h1>Details, materials, sites.</h1>
+        </div>
         {tagNames.length > 0 && (
           <nav className="gallery-filter">
             <Link href="/gallery" className={`tag ${!activeTag ? 'tag-active' : ''}`}>

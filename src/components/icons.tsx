@@ -1,7 +1,7 @@
 import React from 'react'
 
-// Minimal inline icons drawn with `currentColor` so they inherit the
-// surrounding text color. Swap for your own icon set when styling.
+// Brand icons drawn with `currentColor` so they inherit the surrounding text color.
+// The arrows are the studio's supplied artwork: a hairline shaft with swept barbs.
 
 type IconProps = React.SVGProps<SVGSVGElement>
 
@@ -11,18 +11,18 @@ export function ArrowRight({ className, ...props }: IconProps) {
   return (
     <svg
       className={cx('arrow-icon', className)}
-      viewBox="0 0 24 24"
+      width="22"
+      height="13"
+      viewBox="0 0 22 13"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth="1"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       focusable="false"
       {...props}
     >
-      <path d="M5 12h14M13 5l7 7-7 7" />
+      <path d="M22 6.17798C22 6.17798 17.4271 6.17798 15.1416 0.177979M22 6.17798C22 6.17798 17.4271 6.17798 15.1416 12.178M22 6.17798L17.4271 6.17798H15.1416L3.1988e-07 6.17798" />
     </svg>
   )
 }
@@ -31,18 +31,18 @@ export function ArrowLeft({ className, ...props }: IconProps) {
   return (
     <svg
       className={cx('arrow-icon', className)}
-      viewBox="0 0 24 24"
+      width="22"
+      height="13"
+      viewBox="0 0 22 13"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth="1"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       focusable="false"
       {...props}
     >
-      <path d="M19 12H5m6-7-7 7 7 7" />
+      <path d="M0.00195312 6.17798C0.00195312 6.17798 4.57484 6.17798 6.86037 12.178M0.00195312 6.17798C0.00195312 6.17798 4.57484 6.17798 6.86037 0.177979M0.00195312 6.17798L4.57484 6.17798H6.86037L22.002 6.17798" />
     </svg>
   )
 }
@@ -55,7 +55,7 @@ export function Heart({ className, ...props }: IconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.7"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
       xmlns="http://www.w3.org/2000/svg"

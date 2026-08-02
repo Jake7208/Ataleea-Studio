@@ -9,8 +9,8 @@ import JournalList from '@/components/JournalList'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'BLOG_PAGE_DESCRIPTION',
+  title: 'Journal',
+  description: 'Notes on design, local search and running a service business online.',
 }
 
 export default async function BlogIndexPage() {
@@ -36,8 +36,10 @@ export default async function BlogIndexPage() {
   return (
     <>
       <section className="page-intro container">
-        <p className="eyebrow">Blog / {totalDocs}</p>
-        <h1>BLOG_PAGE_HEADLINE</h1>
+        <div data-reveal>
+          <p className="eyebrow">Journal / {totalDocs}</p>
+          <h1>Notes from the studio.</h1>
+        </div>
       </section>
 
       <section className="container">

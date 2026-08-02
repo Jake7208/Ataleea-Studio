@@ -73,6 +73,7 @@ export interface Config {
     blog: Blog;
     tags: Tag;
     testimonials: Testimonial;
+    faqs: Faq;
     'contact-submissions': ContactSubmission;
     comments: Comment;
     'payload-kv': PayloadKv;
@@ -88,6 +89,7 @@ export interface Config {
     blog: BlogSelect<false> | BlogSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -337,11 +339,11 @@ export interface Testimonial {
   _order?: string | null;
   name: string;
   /**
-   * e.g. "Team Lead — Proctor & Gamble"
+   * e.g. "Team Lead — Acme Corp"
    */
   role?: string | null;
   /**
-   * e.g. "Proctor & Gamble"
+   * e.g. "Acme Corp"
    */
   company?: string | null;
   /**
@@ -361,6 +363,41 @@ export interface Testimonial {
   createdAt: string;
 }
 /**
+ * Drag rows in this list to set the order they appear on the site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: string;
+  _order?: string | null;
+  question: string;
+  /**
+   * Keep it to a short paragraph or two. Links are fine.
+   */
+  answer: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Uncheck to hide this question from the site.
+   */
+  published?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contact-submissions".
  */
@@ -368,7 +405,7 @@ export interface ContactSubmission {
   id: string;
   name: string;
   email: string;
-  topic?: ('work' | 'question' | 'hello') | null;
+  topic?: ('project' | 'local' | 'care' | 'other') | null;
   message: string;
   updatedAt: string;
   createdAt: string;
@@ -455,6 +492,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'testimonials';
         value: string | Testimonial;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: string | Faq;
       } | null)
     | ({
         relationTo: 'contact-submissions';
@@ -677,6 +718,18 @@ export interface TestimonialsSelect<T extends boolean = true> {
   image?: T;
   quote?: T;
   featured?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  _order?: T;
+  question?: T;
+  answer?: T;
+  published?: T;
   updatedAt?: T;
   createdAt?: T;
 }

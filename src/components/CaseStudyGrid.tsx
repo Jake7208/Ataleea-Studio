@@ -15,12 +15,12 @@ export type CaseStudyGridPost = Pick<
 /** Grid of case-study cards — image first, title and role/year caption underneath. */
 export default function CaseStudyGrid({ posts }: { posts: CaseStudyGridPost[] }) {
   return (
-    <div className="gallery-grid">
+    <div className="gallery-grid reveal-group">
       {posts.map((post, i) => {
         const media = mediaInfo(post.mainMedia)
         const sub = [post.roles, post.year].filter(Boolean).join(' — ')
         return (
-          <div key={post.id} className="gallery-item">
+          <div key={post.id} className="gallery-item" data-reveal>
             <Link href={`/work/${post.slug}`} className="work-card">
               {media ? (
                 <Media

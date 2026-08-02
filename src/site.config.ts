@@ -5,35 +5,35 @@
  */
 export const siteConfig = {
   /** Site / brand name — used in the <title> template and the header logo slot. */
-  name: 'SITE_NAME',
+  name: 'Ataleea Studio',
 
   /** Default meta description for the whole site. */
-  description: 'SITE_DESCRIPTION',
+  description:
+    'A design studio for people who build things — image-led websites and local search for contractors, trades and service companies.',
 
   /** The person (or studio) behind the site — used as the default post author. */
-  author: 'AUTHOR_NAME',
+  author: 'Ataleea LLC',
 
   /** Public contact email shown in the footer. */
-  email: 'you@example.com',
+  email: 'hello@ataleea.com',
 
   /** Shown in the footer's location column. */
   location: {
-    line1: 'City, Region',
-    line2: 'Time zone',
+    line1: 'Ataleea LLC',
+    line2: 'United States',
   },
 
   /** External profiles listed in the footer. */
   social: [
-    { label: 'GitHub', href: 'https://github.com/USERNAME' },
-    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/USERNAME/' },
+    { label: 'LinkedIn', href: 'https://linkedin.com/company/ataleea' },
+    { label: 'Google Business Profile', href: '#' },
   ],
 
   /** Primary navigation — shared by the header and footer. */
   nav: [
-    { href: '/', label: 'Home' },
     { href: '/work', label: 'Work' },
-    { href: '/blog', label: 'Blog' },
-    { href: '/gallery', label: 'Gallery' },
-    { href: '/contact', label: 'Contact' },
+    { href: '/#services', label: 'Services' },
+    { href: '/#faq', label: 'FAQ' },
+    { href: '/blog', label: 'Journal' },
   ],
 } as const

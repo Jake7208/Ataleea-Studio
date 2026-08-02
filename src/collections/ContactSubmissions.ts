@@ -1,11 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import { Resend } from 'resend'
 
-const TOPIC_LABELS: Record<string, string> = {
-  work: 'Work together',
-  question: 'A question',
-  hello: 'Just saying hi',
-}
+import { CONTACT_TOPICS } from '@/lib/contact-topics'
+
+const TOPIC_LABELS: Record<string, string> = Object.fromEntries(
+  CONTACT_TOPICS.map(({ value, label }) => [value, label]),
+)
 
 const escapeHtml = (s: string) =>
   s
@@ -82,11 +82,9 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'topic',
       type: 'select',
-      options: [
-        { label: 'Work together', value: 'work' },
-        { label: 'A question', value: 'question' },
-        { label: 'Just saying hi', value: 'hello' },
-      ],
+      // shared with the front-end form so the two can never drift apart —
+      // a value the select doesn't list is rejected on create
+      options: CONTACT_TOPICS.map(({ value, label }) => ({ value, label })),
     },
     {
       name: 'message',

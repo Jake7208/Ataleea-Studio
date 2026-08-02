@@ -3,153 +3,168 @@ import Link from 'next/link'
 import React from 'react'
 
 import config from '@/payload.config'
-import { siteConfig } from '@/site.config'
-import CaseStudyGrid from '@/components/CaseStudyGrid'
-import JournalList from '@/components/JournalList'
-import Testimonials from '@/components/Testimonials'
-import { pickShowcase } from '@/lib/showcase'
+import { ContactTrigger } from '@/components/ContactPanel'
+import FaqSection from '@/components/FaqSection'
+import ImageSlot from '@/components/ImageSlot'
+import ServicesSection from '@/components/ServicesSection'
+import RetainersSection from '@/components/RetainersSection'
+import TestimonialsSection from '@/components/TestimonialsSection'
+import WorkShowcaseSection from '@/components/WorkShowcaseSection'
+import { ArrowRight } from '@/components/icons'
 
 // statically rendered, refreshed in the background at most once a minute
 export const revalidate = 60
 
+const capabilities = [
+  {
+    number: '01',
+    title: 'Design & build',
+    copy: 'Websites shaped around the work — projects, materials, process.',
+  },
+  {
+    number: '02',
+    title: 'Local search',
+    copy: 'Found first by the people searching for your trade nearby.',
+  },
+  {
+    number: '03',
+    title: 'Ongoing care',
+    copy: 'Hosting, updates and new work published every month.',
+  },
+]
+
 export default async function HomePage() {
   const payload = await getPayload({ config: await config })
 
-  const [featuredRes, journalRes, testimonialRes] = await Promise.all([
+  const [featuredRes, testimonialRes, faqRes] = await Promise.all([
     payload.find({
       collection: 'case-studies',
-      where: { _status: { not_equals: 'draft' } },
-      limit: 4,
-      sort: '-publishedAt',
-      depth: 1,
-      select: {
-        title: true,
-        slug: true,
-        roles: true,
-        year: true,
-        mainMedia: true,
-        tags: true,
-        // the hero races this against the newest blog post
-        publishedAt: true,
-      },
-    }),
-    payload.find({
-      collection: 'blog',
       where: { _status: { not_equals: 'draft' } },
       limit: 3,
       sort: '-publishedAt',
       depth: 1,
-      select: {
-        title: true,
-        slug: true,
-        excerpt: true,
-        publishedAt: true,
-        tags: true,
-        mainMedia: true,
-      },
+      // the grid only needs the cover and caption fields
+      select: { title: true, slug: true, roles: true, year: true, mainMedia: true, tags: true },
     }),
     payload.find({
       collection: 'testimonials',
       where: { featured: { equals: true } },
-      limit: 6,
-      // drag order from the admin list view
+      limit: 3,
       sort: '_order',
       depth: 1,
-      select: {
-        name: true,
-        role: true,
-        company: true,
-        companyLogo: true,
-        image: true,
-        quote: true,
-      },
+    }),
+    payload.find({
+      collection: 'faqs',
+      where: { published: { equals: true } },
+      limit: 12,
+      sort: '_order',
+      depth: 0,
+      select: { question: true, answer: true },
     }),
   ])
 
-  const featured = featuredRes.docs
-  const journal = journalRes.docs
-  const testimonials = testimonialRes.docs
-  // the hero card showcases whichever went out most recently — case study or post
-  const latest = pickShowcase(featured[0], journal[0])
-
   return (
     <>
-      <section className="hero container">
-        {/* HERO — replace with your headline and intro */}
-        <h1>HERO_HEADLINE</h1>
-        <p>HERO_SUBLINE</p>
-        <p>
-          <Link href="/work">View work</Link> <Link href="/contact">Get in touch</Link>
-        </p>
+      {/* ── HERO ──────────────────────────────────────────────────────────── */}
+      <section className="hero">
+        <div className="container">
+          <h1 className="display hero-display" data-reveal>
+            Digital presence for people who build things.
+          </h1>
 
-        {latest && (
-          <Link href={latest.href} className="hero-latest">
-            <span>{latest.eyebrow}</span> <strong>{latest.title}</strong>
-            {latest.meta && <span> — {latest.meta}</span>}
-          </Link>
-        )}
-      </section>
+          <div className="hero-body" data-reveal>
+            <p className="lead">
+              Ataleea Studio designs restrained, image-led websites for contractors, trades and
+              service companies — then keeps them found on local search.
+            </p>
 
-      <section className="section container">
-        <div className="section-head">
-          <h2>About</h2>
-        </div>
-        <div className="about-grid">
-          {/* ABOUT — a short paragraph about you / the studio */}
-          <p>ABOUT_TEXT</p>
-          <dl className="about-facts">
-            <div>
-              <dt>Currently</dt>
-              <dd>FACT_1</dd>
+            <div className="hero-actions">
+              <ContactTrigger className="btn btn-solid">Start a project</ContactTrigger>
+              <Link href="/work" className="link-arrow">
+                See the work
+                <ArrowRight />
+              </Link>
             </div>
-            <div>
-              <dt>Next</dt>
-              <dd>FACT_2</dd>
+          </div>
+        </div>
+
+        {/* wider than the text column, inset just enough to keep off the edge */}
+        <div className="container-wide">
+          <div className="hero-media full-media" data-reveal>
+            <ImageSlot
+              label="Hero — establishing shot"
+              spec="One finished project, wide. Building in full, shot straight on in good light."
+            />
+          </div>
+        </div>
+
+        <div className="container hero-index-wrap">
+          <div className="hero-index reveal-group">
+            {capabilities.map(({ number, title, copy }) => (
+              <div key={number} className="hero-index-item" data-reveal>
+                <span className="num">{number}</span>
+                <h3>{title}</h3>
+                <p>{copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── STATEMENT ─────────────────────────────────────────────────────── */}
+      <section className="section section-alt">
+        <div className="container statement-layout">
+          <div className="statement-text" data-reveal>
+            <h2 className="statement-title">
+              Most trade websites are built to sell templates, not work.
+            </h2>
+
+            <div className="statement-body">
+              <p>
+                If you sell high-value services — commercial builds, structural work, custom
+                interiors — you don&rsquo;t need a shopping cart. You need the work itself
+                presented clearly enough that a client or investor can judge it in thirty seconds.
+              </p>
+              <p>
+                We build sites that do one job well: show what you&rsquo;ve made, in the best
+                light, to the people already looking for it.
+              </p>
             </div>
-            <div>
-              <dt>Located</dt>
-              <dd>{siteConfig.location.line1}</dd>
-            </div>
-          </dl>
+          </div>
+
+          <div className="statement-media bleed-right" data-reveal>
+            <ImageSlot
+              label="Approach — detail"
+              spec="Close crop on craft: a material joint, a hand at work, a finished edge. Tall."
+            />
+          </div>
         </div>
       </section>
 
-      <section className="section container">
-        <div className="section-head">
-          <h2>Work</h2>
-          <Link href="/work">All work</Link>
-        </div>
-        {featured.length > 0 ? (
-          <CaseStudyGrid posts={featured} />
-        ) : (
-          <div className="empty-state">
-            <p>Nothing here yet — publish a case study in the admin panel.</p>
-          </div>
-        )}
+      {/* ── SERVICES ──────────────────────────────────────────────────────── */}
+      <ServicesSection />
+
+      {/* ── SELECTED WORK ─────────────────────────────────────────────────── */}
+      <WorkShowcaseSection posts={featuredRes.docs} />
+
+      {/* ── FULL-BLEED BAND ───────────────────────────────────────────────── */}
+      {/* deliberately edge to edge — no container */}
+      <section className="band full-media" data-reveal>
+        <ImageSlot
+          label="Band — atmosphere"
+          spec="Edge-to-edge site or interior shot. Wide, quiet, no text overlay — a visual pause."
+        />
       </section>
 
-      {testimonials.length > 0 && (
-        <section className="section container">
-          <div className="section-head">
-            <h2>Kind words</h2>
-          </div>
-          <Testimonials items={testimonials} />
-        </section>
-      )}
+      {/* ── CARE PLANS ────────────────────────────────────────────────────── */}
+      <RetainersSection />
 
-      <section className="section container">
-        <div className="section-head">
-          <h2>Blog</h2>
-          <Link href="/blog">All posts</Link>
-        </div>
-        {journal.length > 0 ? (
-          <JournalList posts={journal} />
-        ) : (
-          <div className="empty-state">
-            <p>Nothing published yet — the first post is coming.</p>
-          </div>
-        )}
-      </section>
+      {/* ── TESTIMONIALS ──────────────────────────────────────────────────── */}
+      <TestimonialsSection items={testimonialRes.docs} />
+
+      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
+      {/* the closing call to action lives in the footer, on every page */}
+      <FaqSection items={faqRes.docs} />
     </>
   )
 }

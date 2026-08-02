@@ -69,7 +69,7 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
     <>
       <div className="gallery-grid">
         {items.map((item, i) => (
-          <div key={item.id} className="gallery-item">
+          <div key={item.id} className="gallery-item" data-reveal>
             <button
               type="button"
               className="gallery-open"

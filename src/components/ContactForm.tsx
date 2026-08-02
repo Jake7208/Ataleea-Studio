@@ -1,38 +1,39 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useId, useState } from 'react'
 
-type Topic = 'work' | 'question' | 'hello'
-
-// values must match the `topic` select options in collections/ContactSubmissions.ts
-const TOPICS: { value: Topic; label: string }[] = [
-  { value: 'work', label: 'Work together' },
-  { value: 'question', label: 'A question' },
-  { value: 'hello', label: 'Just saying hi' },
-]
+import { CONTACT_TOPICS, type ContactTopic } from '@/lib/contact-topics'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-const EMPTY = { name: '', email: '', topic: '' as Topic | '', message: '' }
+const DEFAULT_TOPIC: ContactTopic = 'project'
 
-/** Plain contact form — posts straight to Payload's REST API. */
-export default function ContactForm() {
-  const [values, setValues] = useState(EMPTY)
+export default function ContactForm({ initialTopic }: { initialTopic?: ContactTopic }) {
+  const groupName = useId()
+  const empty = {
+    name: '',
+    company: '',
+    email: '',
+    topic: (initialTopic ?? DEFAULT_TOPIC) as ContactTopic,
+    message: '',
+  }
+
+  const [values, setValues] = useState(empty)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [sent, setSent] = useState(false)
 
   const set =
-    (key: keyof typeof EMPTY) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    (key: 'name' | 'company' | 'email' | 'message') =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setValues((v) => ({ ...v, [key]: e.target.value }))
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (values.name.trim().length < 2) return setError('Please enter your name.')
-    if (!EMAIL_RE.test(values.email.trim())) return setError('That email doesn’t look right yet.')
-    if (values.message.trim().length < 5) return setError('Please write a short message.')
+    if (!EMAIL_RE.test(values.email.trim())) return setError('Please enter a valid email address.')
+    if (values.message.trim().length < 5) return setError('Please add a line or two about the project.')
 
     setSubmitting(true)
     setError(null)
@@ -41,17 +42,17 @@ export default function ContactForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: values.name.trim(),
+          name: values.company ? `${values.name.trim()} (${values.company.trim()})` : values.name.trim(),
           email: values.email.trim(),
-          topic: values.topic || undefined,
+          topic: values.topic,
           message: values.message.trim(),
         }),
       })
       if (!res.ok) throw new Error(`Request failed (${res.status})`)
-      setValues(EMPTY)
+      setValues(empty)
       setSent(true)
     } catch {
-      setError('Something went wrong sending that — try again in a moment.')
+      setError('Something went wrong sending your message — please try again in a moment.')
     } finally {
       setSubmitting(false)
     }
@@ -59,9 +60,10 @@ export default function ContactForm() {
 
   if (sent) {
     return (
-      <div className="contact-form contact-form-done">
-        <p>Thanks — your message is on its way.</p>
-        <button type="button" onClick={() => setSent(false)}>
+      <div className="form-done">
+        <h3>Thanks — your message is in.</h3>
+        <p>We read everything that comes through and will reply within a day.</p>
+        <button type="button" className="btn btn-outline" onClick={() => setSent(false)}>
           Send another
         </button>
       </div>
@@ -70,57 +72,93 @@ export default function ContactForm() {
 
   return (
     <form className="contact-form" onSubmit={submit} noValidate>
-      <label className="contact-field">
-        <span>Name</span>
-        <input
-          type="text"
-          autoComplete="name"
-          placeholder="Your name"
-          value={values.name}
-          onChange={set('name')}
-          required
-        />
-      </label>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label" htmlFor={`${groupName}-name`}>
+            Name
+          </label>
+          <input
+            id={`${groupName}-name`}
+            className="form-input"
+            type="text"
+            autoComplete="name"
+            value={values.name}
+            onChange={set('name')}
+            required
+          />
+        </div>
 
-      <label className="contact-field">
-        <span>Email</span>
+        <div className="form-group">
+          <label className="form-label" htmlFor={`${groupName}-company`}>
+            Company
+          </label>
+          <input
+            id={`${groupName}-company`}
+            className="form-input"
+            type="text"
+            autoComplete="organization"
+            value={values.company}
+            onChange={set('company')}
+          />
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label" htmlFor={`${groupName}-email`}>
+          Email
+        </label>
         <input
+          id={`${groupName}-email`}
+          className="form-input"
           type="email"
           autoComplete="email"
-          placeholder="you@example.com"
           value={values.email}
           onChange={set('email')}
           required
         />
-      </label>
+      </div>
 
-      <label className="contact-field">
-        <span>Topic</span>
-        <select value={values.topic} onChange={set('topic')}>
-          <option value="">Pick one (optional)</option>
-          {TOPICS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
+      {/* radios rather than a select — the options are worth seeing at a glance */}
+      <fieldset className="form-group choice-group">
+        <legend className="form-label">Enquiry</legend>
+        <div className="choice-row">
+          {CONTACT_TOPICS.map(({ value, label }) => (
+            <label key={value} className="choice">
+              <input
+                type="radio"
+                name={`${groupName}-topic`}
+                value={value}
+                checked={values.topic === value}
+                onChange={() => setValues((v) => ({ ...v, topic: value }))}
+              />
+              <span>{label}</span>
+            </label>
           ))}
-        </select>
-      </label>
+        </div>
+      </fieldset>
 
-      <label className="contact-field">
-        <span>Message</span>
+      <div className="form-group">
+        <label className="form-label" htmlFor={`${groupName}-message`}>
+          Project
+        </label>
         <textarea
-          rows={5}
-          placeholder="Write it here…"
+          id={`${groupName}-message`}
+          className="form-textarea"
+          rows={4}
           value={values.message}
           onChange={set('message')}
           required
         />
-      </label>
+      </div>
 
-      {error && <p className="contact-error">{error}</p>}
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
 
-      <button type="submit" disabled={submitting}>
-        {submitting ? 'Sending…' : 'Send message'}
+      <button type="submit" className="btn btn-solid" disabled={submitting}>
+        {submitting ? 'Sending…' : 'Send enquiry'}
       </button>
     </form>
   )
