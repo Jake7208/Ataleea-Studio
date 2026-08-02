@@ -47,7 +47,8 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
 
     document.documentElement.classList.add('lightbox-open')
     document.documentElement.style.overflow = 'hidden'
-    closeRef.current?.focus()
+    // preventScroll so taking focus doesn't shift the page behind the lightbox
+    closeRef.current?.focus({ preventScroll: true })
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()

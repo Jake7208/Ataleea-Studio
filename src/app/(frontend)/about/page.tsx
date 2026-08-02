@@ -1,0 +1,133 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import React from 'react'
+
+import { siteConfig } from '@/site.config'
+import { ArrowRight } from '@/components/icons'
+
+export const metadata: Metadata = {
+  title: 'About',
+  description:
+    'Ataleea is a small studio building image-led websites and local search for contractors, trades and service companies.',
+}
+
+// how the studio works, rather than what it sells — the services section
+// already covers the latter
+const principles = [
+  {
+    number: '01',
+    title: 'Direct',
+    body: 'You work with me from the first conversation to the last. No account manager in between, no handing the build off to a team you never meet.',
+  },
+  {
+    number: '02',
+    title: 'Small',
+    body: 'A few projects at a time. It means yours gets built rather than queued, and that I can say no to work I am not right for.',
+  },
+  {
+    number: '03',
+    title: 'Plain',
+    body: 'Scope agreed up front, a fixed price against it, and no contract you cannot walk away from. The care plans are month to month for the same reason.',
+  },
+]
+
+export default function AboutPage() {
+  return (
+    <>
+      <section className="page-intro container">
+        <div data-reveal>
+          <p className="eyebrow">About</p>
+          <h1>A studio for people who build things.</h1>
+        </div>
+      </section>
+
+      <section className="section container">
+        <div className="statement" data-reveal>
+          <div>
+            <h2>Ataleea is a small studio, and I run it.</h2>
+          </div>
+          <div>
+            <p>
+              I build image-led websites for contractors, trades and service companies —
+              businesses whose strongest argument is the work itself, photographed properly and
+              put somewhere a client can actually find it.
+            </p>
+            <p>
+              Most of the people I work with are very good at what they do and badly served by the
+              site representing it. A template flattens years of craft into a stock photo and a
+              contact form. I start from the other end: the projects you have finished, the
+              materials you chose, the detail you would point at if the client were standing next
+              to you.
+            </p>
+            <p>
+              That is the whole idea. Show the work, make it findable, and keep it current once
+              launch day is over.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section container">
+        <div className="section-head" data-reveal>
+          <div>
+            <span className="eyebrow">How I work</span>
+            <h2>Three habits, not a process diagram.</h2>
+          </div>
+        </div>
+
+        <div className="hero-index reveal-group">
+          {principles.map(({ number, title, body }) => (
+            <div key={number} className="hero-index-item" data-reveal>
+              <span className="num">{number}</span>
+              <h3>{title}</h3>
+              <p>{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="section container">
+        <div className="statement" data-reveal>
+          <div>
+            <h2>What that looks like in practice.</h2>
+          </div>
+          <div>
+            <p>
+              Three things, mostly: a site built around your completed work, a Google Business
+              Profile set up properly so the people searching your trade in your area find you
+              first, and someone keeping both current afterwards.
+            </p>
+            <p>
+              If you want the detail — what is included, what it costs, how long it takes — the
+              services and care plans are all written out on the home page.
+            </p>
+            <p className="about-links">
+              <Link href="/#services" className="link-arrow">
+                Services and plans
+                <ArrowRight />
+              </Link>
+              <Link href="/work" className="link-arrow">
+                Recent work
+                <ArrowRight />
+              </Link>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* no call to action here — the footer carries one on every page, and it
+          lands immediately below this block */}
+      <section className="section container">
+        <div className="about-studio" data-reveal>
+          <div>
+            <span className="eyebrow">Studio</span>
+            <p className="lead">
+              {siteConfig.location.line1} — {siteConfig.location.line2}. Reach me at{' '}
+              <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>.
+            </p>
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}

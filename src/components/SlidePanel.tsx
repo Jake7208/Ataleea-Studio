@@ -53,15 +53,20 @@ export default function SlidePanel({ open, onClose, labelledBy, children }: Slid
 
   useEffect(() => {
     if (!open) {
-      // hand focus back to whatever opened the panel
-      restoreTo.current?.focus()
+      // hand focus back to whatever opened the panel, without letting the
+      // browser scroll it into view — the reader should be left exactly where
+      // the panel found them
+      restoreTo.current?.focus({ preventScroll: true })
       restoreTo.current = null
       return
     }
 
     restoreTo.current = document.activeElement as HTMLElement | null
     lockScroll()
-    closeRef.current?.focus()
+    // preventScroll matters here too: the panel is still parked at
+    // translateX(100%) when this runs, so focusing into it would send the page
+    // chasing an off-screen element
+    closeRef.current?.focus({ preventScroll: true })
     document.addEventListener('keydown', onKeyDown)
 
     return () => {

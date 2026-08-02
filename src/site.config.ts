@@ -33,7 +33,7 @@ export const siteConfig = {
   nav: [
     { href: '/work', label: 'Work' },
     { href: '/#services', label: 'Services' },
-    { href: '/#faq', label: 'FAQ' },
+    { href: '/about', label: 'About' },
     { href: '/blog', label: 'Journal' },
   ],
 } as const

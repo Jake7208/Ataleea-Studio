@@ -7,6 +7,8 @@
    ========================================================================== */
 
 :root {
+  color-scheme: light;
+
   /* Surfaces */
   --paper: #fbfaf6;
   --paper-alt: #f1f0e9;
@@ -18,7 +20,8 @@
   --ink-muted: #61726d;
   --ink-faint: #97a29e;
 
-  /* Ink on dark surfaces */
+  /* Ink on dark surfaces — the forest panels stay dark in both schemes, so
+     these hold in both. */
   --on-dark: #f1f0e9;
   --on-dark-muted: rgba(241, 240, 233, 0.6);
   --on-dark-faint: rgba(241, 240, 233, 0.38);
@@ -27,6 +30,18 @@
   --line: rgba(15, 45, 43, 0.14);
   --line-strong: rgba(15, 45, 43, 0.3);
   --line-dark: rgba(241, 240, 233, 0.16);
+
+  /* The solid button's own surface. Kept separate from --forest because in
+     dark mode the loudest button has to be light, while the forest panels
+     stay green. */
+  --accent: var(--forest);
+  --accent-ink: var(--paper);
+
+  /* Surfaces that have to know which way round the page is */
+  --paper-blur: rgba(251, 250, 246, 0.92);
+  --tint: rgba(15, 45, 43, 0.025);
+  --scrim: rgba(10, 33, 32, 0.45);
+  --danger: #8c2f26;
 
   /* Type */
   --font-display: 'Inter Tight', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -385,9 +400,9 @@ strong {
 
 .btn-solid,
 .btn-primary {
-  background-color: var(--forest);
-  color: var(--paper);
-  border-color: var(--forest);
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
 }
 
 .btn-solid:hover,
@@ -406,9 +421,9 @@ strong {
 
 .btn-outline:hover,
 .btn-secondary:hover {
-  background-color: var(--forest);
-  color: var(--paper);
-  border-color: var(--forest);
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
 }
 
 .btn-light {
@@ -531,7 +546,7 @@ strong {
   height: var(--header-h);
   display: flex;
   align-items: center;
-  background-color: rgba(251, 250, 246, 0.92);
+  background-color: var(--paper-blur);
   backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid var(--line);
 }
@@ -837,7 +852,7 @@ strong {
 }
 
 .service-row:hover {
-  background-color: rgba(15, 45, 43, 0.02);
+  background-color: var(--tint);
 }
 
 /* the active row is marked by a rule drawing along its base */
@@ -968,7 +983,7 @@ strong {
 .slide-panel-backdrop {
   position: absolute;
   inset: 0;
-  background-color: rgba(10, 33, 32, 0.45);
+  background-color: var(--scrim);
   opacity: 0;
   transition: opacity var(--dur) var(--ease);
 }
@@ -1533,7 +1548,7 @@ strong {
 
 .form-error {
   font-size: 0.875rem;
-  color: #8c2f26;
+  color: var(--danger);
   margin: 0;
 }
 
@@ -1552,7 +1567,7 @@ strong {
 
 .contact-error {
   font-size: 0.875rem;
-  color: #8c2f26;
+  color: var(--danger);
   margin: 0;
 }
 
@@ -1919,7 +1934,7 @@ strong {
 }
 
 .journal-row:hover {
-  background-color: rgba(15, 45, 43, 0.025);
+  background-color: var(--tint);
 }
 
 .journal-thumb img,
@@ -2157,27 +2172,111 @@ strong {
    Testimonials
    -------------------------------------------------------------------------- */
 
-.testimonial-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-  gap: clamp(2rem, 4vw, 4rem);
+.testimonial-carousel {
   border-top: 1px solid var(--line);
   padding-top: clamp(2rem, 4vw, 3rem);
 }
 
+/* Every quote sits in the same grid cell, so the block settles at the height of
+   the longest one and holds it. Nothing below the quote moves as you step —
+   the arrows are a fixed mark on the page, not something that drifts with the
+   length of whatever is on show. */
+.testimonial-viewport {
+  display: grid;
+}
+
+/* Resting state: parked below, waiting to rise. Quotes leave upwards via the
+   animation below rather than a transition, so that when one finishes leaving
+   it lands back down here — ready to come up from the bottom next time round,
+   never back down from the top. */
+/* each slide fills the cell so its attribution can sit on the floor of the
+   block rather than trailing whatever length the quote happens to be */
+.testimonial-viewport > .testimonial {
+  grid-area: 1 / 1;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+}
+
+/* Measures are in rem, not ch: `ch` here would resolve against the inherited
+   body size rather than the display size the quote is actually set at, which
+   reads about a third narrower than intended. Each is roughly 50 characters
+   at its own size. */
+.testimonial[data-size='short'] {
+  max-width: 48rem;
+}
+
+.testimonial[data-size='mid'] {
+  max-width: 46rem;
+}
+
+.testimonial[data-size='long'] {
+  max-width: 44rem;
+}
+
+/* the incoming quote holds still until the outgoing one has cleared */
+.testimonial-viewport > .testimonial.is-current {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--dur) var(--ease) var(--dur),
+    transform var(--dur) var(--ease) var(--dur),
+    visibility 0s linear var(--dur);
+}
+
+.testimonial-viewport > .testimonial.is-leaving {
+  animation: testimonial-out var(--dur) var(--ease);
+}
+
+@keyframes testimonial-out {
+  from {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    visibility: visible;
+    transform: translateY(-12px);
+  }
+}
+
 .testimonial-quote {
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  line-height: 1.4;
-  letter-spacing: -0.012em;
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
   color: var(--ink);
-  margin: 0 0 1.5rem;
+  margin: 0 0 2rem;
+  text-wrap: balance;
+}
+
+/* a couple of sentences still carries at pull-quote size; a few paragraphs
+   has to step down to stay readable */
+.testimonial[data-size='mid'] .testimonial-quote {
+  font-size: clamp(1.2rem, 1.8vw, 1.5rem);
+  line-height: 1.4;
+}
+
+.testimonial[data-size='long'] .testimonial-quote {
+  font-size: clamp(1.05rem, 1.35vw, 1.2rem);
+  line-height: 1.55;
+  letter-spacing: -0.008em;
+  /* balancing fights the ragged edge on something this long */
+  text-wrap: pretty;
 }
 
 .testimonial-who {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  /* pinned to the bottom of the slide, so it lands in the same place whichever
+     quote is showing */
+  margin-top: auto;
 }
 
 .testimonial-avatar img,
@@ -2203,10 +2302,61 @@ strong {
 }
 
 .testimonial-logo {
-  margin-top: 1rem;
+  margin-left: auto;
   max-height: 1.5rem;
   width: auto;
   opacity: 0.5;
+}
+
+/* counter left, arrows right — the same footing as .footer-bottom */
+.testimonial-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.testimonial-count {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.testimonial-count-now {
+  color: var(--ink);
+}
+
+.testimonial-navrow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* light-surface twin of .lightbox-nav */
+.testimonial-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 2.5rem;
+  background: none;
+  border: 1px solid var(--line-strong);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.testimonial-nav:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  background-color: var(--tint);
 }
 
 /* --------------------------------------------------------------------------
@@ -2359,6 +2509,32 @@ strong {
 }
 
 /* --------------------------------------------------------------------------
+   About
+   -------------------------------------------------------------------------- */
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2.5rem;
+  margin-top: 2rem;
+}
+
+.about-studio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem 2.5rem;
+  padding-top: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid var(--line);
+}
+
+.about-studio .lead {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
    Misc
    -------------------------------------------------------------------------- */
 
@@ -2388,6 +2564,22 @@ strong {
 html.lightbox-open,
 html.is-scroll-locked {
   overflow: hidden;
+}
+
+/* `overflow: hidden` on the root leaves the sticky header without a scrollport,
+   so it drops back to the top of the document — out of view if the panel was
+   opened from partway down the page. Pin it for the length of the lock, and
+   give the flow back the height it stops taking up so the page behind the
+   panel doesn't jump. */
+html.lightbox-open .site-header,
+html.is-scroll-locked .site-header {
+  position: fixed;
+  inset-inline: 0;
+}
+
+html.lightbox-open body,
+html.is-scroll-locked body {
+  padding-top: var(--header-h);
 }
 
 /* --------------------------------------------------------------------------
@@ -2528,6 +2720,53 @@ html.is-scroll-locked {
 
   .lightbox-thumbs {
     display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Dark scheme
+
+   Follows the operating system and nothing else — there is no toggle, so the
+   only thing that decides is prefers-color-scheme. Everything below is a token
+   swap; no component knows which scheme it is in.
+
+   The forest panels (.section-dark, the footer, the lightbox) stay green in
+   both schemes. In light they sit darker than the page; in dark they sit
+   slightly lighter than it, so they still read as a separate surface rather
+   than merging into the background.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --paper: #0a1413;
+    --paper-alt: #0f1c1a;
+    --forest: #14302c;
+    --forest-deep: #0d2220;
+
+    --ink: #e8e6dd;
+    --ink-muted: #9aa8a3;
+    --ink-faint: #6f7f7a;
+
+    --line: rgba(232, 230, 221, 0.14);
+    --line-strong: rgba(232, 230, 221, 0.32);
+
+    /* flipped: on a dark page the light button is the loud one */
+    --accent: #e8e6dd;
+    --accent-ink: #0a1413;
+
+    --paper-blur: rgba(10, 20, 19, 0.92);
+    --tint: rgba(232, 230, 221, 0.05);
+    --scrim: rgba(0, 0, 0, 0.62);
+    --danger: #e39289;
+  }
+
+  /* photography carries a lot of white — take the glare off without washing
+     the colour out */
+  img,
+  video {
+    opacity: 0.94;
   }
 }
 

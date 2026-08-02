@@ -9,6 +9,8 @@ const services = [
   { href: '/#services', label: 'Project sites' },
   { href: '/#services', label: 'Local search' },
   { href: '/#care', label: 'Care plans' },
+  // off the header now that About has the slot, but still worth reaching
+  { href: '/#faq', label: 'Common questions' },
 ]
 
 export default function Footer() {
