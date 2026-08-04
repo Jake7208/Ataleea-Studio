@@ -7,15 +7,23 @@ export const siteConfig = {
   /** Site / brand name — used in the <title> template and the header logo slot. */
   name: 'Ataleea Studio',
 
+  /**
+   * Canonical origin, no trailing slash. Everything that has to emit an absolute
+   * URL reads this: metadataBase, the sitemap, robots.txt and the social cards.
+   * Set NEXT_PUBLIC_SITE_URL in production — left unset, links in shared
+   * previews and the sitemap will point at localhost.
+   */
+  url: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/+$/, ''),
+
   /** Default meta description for the whole site. */
   description:
-    'A design studio for people who build things — image-led websites and local search for contractors, trades and service companies.',
+    'Websites designed and built for construction companies and the trades around them. Drawn from scratch rather than dropped into a template, and set up to be found on local search.',
 
   /** The person (or studio) behind the site — used as the default post author. */
   author: 'Ataleea LLC',
 
   /** Public contact email shown in the footer. */
-  email: 'hello@ataleea.com',
+  email: 'contact@ataleea.com',
 
   /** Shown in the footer's location column. */
   location: {
@@ -32,7 +40,7 @@ export const siteConfig = {
   /** Primary navigation — shared by the header and footer. */
   nav: [
     { href: '/work', label: 'Work' },
-    { href: '/#services', label: 'Services' },
+    { href: '/services', label: 'Services' },
     { href: '/about', label: 'About' },
     { href: '/blog', label: 'Journal' },
   ],

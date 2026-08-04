@@ -109,7 +109,7 @@ export default async function GalleryPage({ searchParams }: Props) {
             <p>
               {activeTag
                 ? `Nothing tagged “${activeTag}” yet.`
-                : 'Nothing here yet — tag an image in the admin panel to add it to the gallery.'}
+                : 'Nothing here yet. Tag an image in the admin panel to add it to the gallery.'}
             </p>
           </div>
         )}

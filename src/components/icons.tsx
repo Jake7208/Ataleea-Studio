@@ -47,6 +47,30 @@ export function ArrowLeft({ className, ...props }: IconProps) {
   )
 }
 
+// Half-filled disc for the theme toggle — a contrast mark rather than a
+// sun/moon pair, so it stays one shape and one silhouette. The solid half swaps
+// side by rotating 180°, which the stylesheet drives off the scheme itself.
+export function Contrast({ className, ...props }: IconProps) {
+  return (
+    <svg
+      className={cx('theme-toggle-icon', className)}
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      {...props}
+    >
+      <circle cx="8" cy="8" r="7" />
+      <path d="M8 1a7 7 0 0 0 0 14Z" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 // Outline heart that fills with `currentColor` when its button carries `.is-liked`.
 export function Heart({ className, ...props }: IconProps) {
   return (

@@ -18,7 +18,7 @@ export default function CaseStudyGrid({ posts }: { posts: CaseStudyGridPost[] })
     <div className="gallery-grid reveal-group">
       {posts.map((post, i) => {
         const media = mediaInfo(post.mainMedia)
-        const sub = [post.roles, post.year].filter(Boolean).join(' — ')
+        const sub = [post.roles, post.year].filter(Boolean).join(', ')
         return (
           <div key={post.id} className="gallery-item" data-reveal>
             <Link href={`/work/${post.slug}`} className="work-card">

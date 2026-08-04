@@ -7,7 +7,6 @@ import { ContactTrigger } from '@/components/ContactPanel'
 import FaqSection from '@/components/FaqSection'
 import ImageSlot from '@/components/ImageSlot'
 import ServicesSection from '@/components/ServicesSection'
-import RetainersSection from '@/components/RetainersSection'
 import TestimonialsSection from '@/components/TestimonialsSection'
 import WorkShowcaseSection from '@/components/WorkShowcaseSection'
 import { ArrowRight } from '@/components/icons'
@@ -15,28 +14,30 @@ import { ArrowRight } from '@/components/icons'
 // statically rendered, refreshed in the background at most once a minute
 export const revalidate = 60
 
+// Positioning, not a service list — the services section below names what you
+// can actually buy, and repeating those three titles here read as indecision.
 const capabilities = [
   {
     number: '01',
-    title: 'Design & build',
-    copy: 'Websites shaped around the work — projects, materials, process.',
+    title: 'Drawn, not assembled',
+    copy: 'No themes and no page builders. Each site starts as a blank page and your projects.',
   },
   {
     number: '02',
-    title: 'Local search',
-    copy: 'Found first by the people searching for your trade nearby.',
+    title: 'Built to be found',
+    copy: 'Site and Google profile set up together, so a search for your trade nearby lands on you.',
   },
   {
     number: '03',
-    title: 'Ongoing care',
-    copy: 'Hosting, updates and new work published every month.',
+    title: 'Still current in a year',
+    copy: 'New work published as you finish it, rather than left at launch-day state.',
   },
 ]
 
 export default async function HomePage() {
   const payload = await getPayload({ config: await config })
 
-  const [featuredRes, testimonialRes, faqRes] = await Promise.all([
+  const [featuredRes, testimonialRes, faqRes, siteMedia] = await Promise.all([
     payload.find({
       collection: 'case-studies',
       where: { _status: { not_equals: 'draft' } },
@@ -61,7 +62,12 @@ export default async function HomePage() {
       depth: 0,
       select: { question: true, answer: true },
     }),
+    // the three fixed shots built into this page's layout — depth 1 so each
+    // upload arrives populated rather than as a bare id
+    payload.findGlobal({ slug: 'site-media', depth: 1 }),
   ])
+
+  const home = siteMedia?.home
 
   return (
     <>
@@ -74,8 +80,9 @@ export default async function HomePage() {
 
           <div className="hero-body" data-reveal>
             <p className="lead">
-              Ataleea Studio designs restrained, image-led websites for contractors, trades and
-              service companies — then keeps them found on local search.
+              I design and build websites for construction companies and the trades around them.
+              Every one is drawn from scratch rather than dropped into a template, then set up to
+              be found on local search.
             </p>
 
             <div className="hero-actions">
@@ -92,8 +99,10 @@ export default async function HomePage() {
         <div className="container-wide">
           <div className="hero-media full-media" data-reveal>
             <ImageSlot
-              label="Hero — establishing shot"
+              label="Hero, establishing shot"
               spec="One finished project, wide. Building in full, shot straight on in good light."
+              media={home?.hero}
+              loading="eager"
             />
           </div>
         </div>
@@ -116,26 +125,32 @@ export default async function HomePage() {
         <div className="container statement-layout">
           <div className="statement-text" data-reveal>
             <h2 className="statement-title">
-              Most trade websites are built to sell templates, not work.
+              Most construction websites are a template with a logo dropped in.
             </h2>
 
             <div className="statement-body">
               <p>
-                If you sell high-value services — commercial builds, structural work, custom
-                interiors — you don&rsquo;t need a shopping cart. You need the work itself
-                presented clearly enough that a client or investor can judge it in thirty seconds.
+                A page builder can put a site online in a weekend. It will also look like every
+                other site put online that weekend, and it will show your best project at the same
+                size as your worst.
               </p>
               <p>
-                We build sites that do one job well: show what you&rsquo;ve made, in the best
-                light, to the people already looking for it.
+                If you sell high value work like commercial builds, structural jobs or custom
+                interiors, you don&rsquo;t need a shopping cart. You need the work itself presented
+                clearly enough that a client can judge it in thirty seconds.
+              </p>
+              <p>
+                So I design each site from scratch, around your projects. One job, done properly.
               </p>
             </div>
           </div>
 
           <div className="statement-media bleed-right" data-reveal>
             <ImageSlot
-              label="Approach — detail"
+              label="Approach, detail"
               spec="Close crop on craft: a material joint, a hand at work, a finished edge. Tall."
+              media={home?.statement}
+              sizes="(max-width: 900px) 100vw, 50vw"
             />
           </div>
         </div>
@@ -151,13 +166,14 @@ export default async function HomePage() {
       {/* deliberately edge to edge — no container */}
       <section className="band full-media" data-reveal>
         <ImageSlot
-          label="Band — atmosphere"
-          spec="Edge-to-edge site or interior shot. Wide, quiet, no text overlay — a visual pause."
+          label="Band, atmosphere"
+          spec="Edge-to-edge site or interior shot. Wide, quiet, no text overlay. A visual pause."
+          media={home?.band}
         />
       </section>
 
-      {/* ── CARE PLANS ────────────────────────────────────────────────────── */}
-      <RetainersSection />
+      {/* care plans moved to /services — pricing belongs with the services it
+          prices, and the home page was carrying two service blocks */}
 
       {/* ── TESTIMONIALS ──────────────────────────────────────────────────── */}
       <TestimonialsSection items={testimonialRes.docs} />

@@ -41,7 +41,7 @@ const faqs = [
   {
     question: 'Do I need professional photography?',
     answer:
-      'It makes more difference than anything else we do. The design is built around large images, so good photography is what separates a site that wins commercial work from one that looks like every other trade site. We can direct a shoot or work with a photographer you already use.',
+      'It makes more difference than anything else. The design is built around large images, so the photos are what separate a site that wins commercial work from one that looks like every other trade site. If you already use a photographer, I will direct the shoot. If you do not, I can shoot it myself — I am not a professional photographer, and I will not pretend otherwise, but a proper camera and careful editing clear the bar most trade sites sit at by a wide margin. Either way the editing is mine, so the finished set reads as one body of work rather than a folder of odds and ends.',
   },
   {
     question: 'Can I update the site myself?',

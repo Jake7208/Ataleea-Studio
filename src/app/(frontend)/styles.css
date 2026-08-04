@@ -7,41 +7,61 @@
    ========================================================================== */
 
 :root {
-  color-scheme: light;
+  /* Both schemes are on the table; which one light-dark() below resolves to is
+     decided by this property, and nothing else. Left as the pair, the OS
+     decides — see "Dark scheme" at the foot of this file for how the toggle
+     narrows it to one. */
+  color-scheme: light dark;
+
+  /* Every colour below is light-dark(light, dark) — one declaration per token
+     rather than a second block at the bottom restating them all. */
 
   /* Surfaces */
-  --paper: #fbfaf6;
-  --paper-alt: #f1f0e9;
-  --forest: #0f2d2b;
-  --forest-deep: #0a2120;
+  --paper: light-dark(#fbfaf6, #0a1413);
+  --paper-alt: light-dark(#f1f0e9, #0f1c1a);
+  --forest: light-dark(#0f2d2b, #14302c);
+  --forest-deep: light-dark(#0a2120, #0d2220);
 
-  /* Ink */
-  --ink: #0f2d2b;
-  --ink-muted: #61726d;
-  --ink-faint: #97a29e;
+  /* Ink.
+     Every tier clears WCAG AAA (7:1) for body-size text against both page
+     surfaces, measured against the darker of the two — paper-alt in light,
+     paper in dark. They're deliberately staged rather than all pinned at the
+     7:1 floor: held at the minimum, muted and faint resolve to the same colour
+     and the three-step hierarchy the type depends on collapses.
+
+              light      on paper / alt      dark       on paper / alt
+     ink      #0f2d2b    14.06 / 12.85       #e8e6dd    14.96 / 13.98
+     muted    #394340     9.86 /  9.02       #b2bdb9     9.65 /  9.01
+     faint    #49524f     7.71 /  7.05       #9ba7a3     7.55 /  7.06 */
+  --ink: light-dark(#0f2d2b, #e8e6dd);
+  --ink-muted: light-dark(#394340, #b2bdb9);
+  --ink-faint: light-dark(#49524f, #9ba7a3);
 
   /* Ink on dark surfaces — the forest panels stay dark in both schemes, so
-     these hold in both. */
+     these hold in both. Same staging, measured over forest in each scheme
+     (#0f2d2b light, #14302c dark): 12.85/12.35, 9.38/9.06, 7.27/7.06.
+     The alphas were 0.6 and 0.38, which rendered the footer's own headings at
+     3.1:1 — the worst text on the site. */
   --on-dark: #f1f0e9;
-  --on-dark-muted: rgba(241, 240, 233, 0.6);
-  --on-dark-faint: rgba(241, 240, 233, 0.38);
+  --on-dark-muted: rgba(241, 240, 233, 0.84);
+  --on-dark-faint: rgba(241, 240, 233, 0.72);
 
   /* Hairlines */
-  --line: rgba(15, 45, 43, 0.14);
-  --line-strong: rgba(15, 45, 43, 0.3);
+  --line: light-dark(rgba(15, 45, 43, 0.14), rgba(232, 230, 221, 0.14));
+  --line-strong: light-dark(rgba(15, 45, 43, 0.3), rgba(232, 230, 221, 0.32));
   --line-dark: rgba(241, 240, 233, 0.16);
 
   /* The solid button's own surface. Kept separate from --forest because in
      dark mode the loudest button has to be light, while the forest panels
-     stay green. */
-  --accent: var(--forest);
-  --accent-ink: var(--paper);
+     stay green — so this is not var(--forest), it only matches it in light. */
+  --accent: light-dark(#0f2d2b, #e8e6dd);
+  --accent-ink: light-dark(#fbfaf6, #0a1413);
 
   /* Surfaces that have to know which way round the page is */
-  --paper-blur: rgba(251, 250, 246, 0.92);
-  --tint: rgba(15, 45, 43, 0.025);
-  --scrim: rgba(10, 33, 32, 0.45);
-  --danger: #8c2f26;
+  --paper-blur: light-dark(rgba(251, 250, 246, 0.92), rgba(10, 20, 19, 0.92));
+  --tint: light-dark(rgba(15, 45, 43, 0.025), rgba(232, 230, 221, 0.05));
+  --scrim: light-dark(rgba(10, 33, 32, 0.45), rgba(0, 0, 0, 0.62));
+  --danger: light-dark(#8c2f26, #e39289);
 
   /* Type */
   --font-display: 'Inter Tight', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -96,7 +116,7 @@ svg {
 
 ::selection {
   background: var(--forest);
-  color: var(--paper);
+  color: var(--on-dark);
 }
 
 /* --------------------------------------------------------------------------
@@ -157,6 +177,28 @@ html[data-reveal-ready]:not([data-reveal-off]) [data-reveal].is-revealed {
 
 .reveal-group > [data-reveal]:nth-child(4) {
   transition-delay: 0.21s;
+}
+
+/* Route changes. Only <main> moves — the header and footer hold still, so a
+   navigation reads as the page turning inside a fixed frame rather than the
+   whole window reloading. The duration is mirrored by EXIT_MS in
+   PageTransition.tsx; changing one means changing the other.
+
+   Reduced motion collapses this to nothing via the global transition-duration
+   override at the foot of the file, and PageTransition stops intercepting
+   clicks in that case, so navigation stays instant. */
+/* The 60ms delay is a hold at zero opacity on arrival, not a stall: the new
+   route paints once at the old scroll position before SmoothScroll places it,
+   and the easing here is ease-out, which is already a fifth of the way up one
+   frame in. Without the hold that correction shows as a flick. Leaving has no
+   delay — only arriving waits. */
+.page-transition {
+  transition: opacity 0.22s var(--ease) 60ms;
+}
+
+html[data-nav='exiting'] .page-transition {
+  opacity: 0;
+  transition-delay: 0s;
 }
 
 /* --------------------------------------------------------------------------
@@ -559,7 +601,12 @@ strong {
   width: 100%;
 }
 
+/* flex rather than the blockified default: as a block the inline-flex lockup
+   sits on a line box, and the strut's descender leaves ~8px of dead space under
+   it. align-items on the row then centres that taller box, not the lockup, and
+   the mark lands visibly above the header's centre line. */
 .site-header .logo {
+  display: flex;
   color: var(--ink);
 }
 
@@ -603,6 +650,38 @@ strong {
 
 .nav-cta {
   padding: 0.7rem 1.35rem;
+}
+
+/* Holds everything on the right of the logo. The toggle lives here rather than
+   in .site-nav so it stays put when the nav collapses into the burger. */
+.header-end {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.25rem, 2.4vw, 2.5rem);
+}
+
+/* Negative margin cancels the padding, so the button keeps a comfortable hit
+   area without pushing the nav around. */
+.theme-toggle {
+  display: inline-flex;
+  background: none;
+  border: 0;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
+}
+
+/* slower than the standard --dur: it's a half-turn, and at 0.3s it snaps.
+   The scheme rules at the foot of this file supply the rotation itself. */
+.theme-toggle-icon {
+  display: block;
+  transition: transform 0.45s var(--ease);
 }
 
 .mobile-nav-toggle {
@@ -729,11 +808,14 @@ strong {
 }
 
 /* Sits in the right-hand hero column on desktop; the grid gap spaces it
-   once the columns stack. */
+   once the columns stack. Pushed to the end of that column so it finishes flush
+   with the container edge — left to start it trailed a column's worth of dead
+   space to its right. */
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 1.5rem 2.5rem;
 }
 
@@ -840,20 +922,22 @@ strong {
   border-top: 1px solid var(--line);
 }
 
+/* Title (with its index and arrow) against the summary. Baseline-aligned so
+   the two columns sit on a shared first line rather than being centred
+   against each other. */
 .service-row {
   position: relative;
   display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: clamp(1.5rem, 4vw, 4rem);
-  align-items: center;
+  align-items: baseline;
   padding-block: clamp(2.25rem, 4vw, 3.5rem);
   border-bottom: 1px solid var(--line);
-  transition: background-color var(--dur) var(--ease);
 }
 
-.service-row:hover {
-  background-color: var(--tint);
-}
+/* No hover fill: a tinted band drew a box the index sat flush against, with
+   nothing between the number and its edge. The rule drawing along the base
+   below carries the hover on its own. */
 
 /* the active row is marked by a rule drawing along its base */
 .service-row::after {
@@ -873,13 +957,23 @@ strong {
   transform: scaleX(1);
 }
 
+/* Index and title on one line. The number rides the title's baseline instead
+   of sitting alone in a column at the far left edge. */
+.service-head {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(0.9rem, 1.6vw, 1.5rem);
+  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  letter-spacing: -0.014em;
+  margin: 0;
+}
+
 .service-num {
+  flex: none;
   font-family: var(--font-display);
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   color: var(--ink-faint);
-  align-self: start;
-  padding-top: 0.5rem;
   transition: color var(--dur) var(--ease);
 }
 
@@ -887,19 +981,16 @@ strong {
   color: var(--ink);
 }
 
-.service-row h3 {
-  font-size: clamp(1.35rem, 2vw, 1.85rem);
-  letter-spacing: -0.014em;
-  margin-bottom: 0.75rem;
-}
-
-.service-main p {
+.service-summary {
   max-width: 52ch;
   margin: 0;
 }
 
-/* the button carries the semantics; the pseudo-element makes the whole row hit */
+/* the link carries the semantics; the pseudo-element makes the whole row hit */
 .service-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
   font: inherit;
   letter-spacing: inherit;
   color: inherit;
@@ -925,13 +1016,18 @@ strong {
   outline-offset: -4px;
 }
 
-.service-open {
-  color: var(--ink-faint);
-  transition: color var(--dur) var(--ease);
+/* Travels with the title rather than sitting stranded at the far right of the
+   row — the same gesture the standalone .link-arrow uses. */
+.service-arrow {
+  opacity: 0.45;
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
 }
 
-.service-row:hover .service-open {
-  color: var(--ink);
+.service-row:hover .service-arrow {
+  opacity: 1;
+  transform: translateX(0.35rem);
 }
 
 .service-list {
@@ -958,6 +1054,99 @@ strong {
   width: 0.75rem;
   height: 1px;
   background-color: var(--line-strong);
+}
+
+/* --------------------------------------------------------------------------
+   Services page — one block per service, plus the process row
+   -------------------------------------------------------------------------- */
+
+/* Only the bottom half of a normal section: each block draws its own rule and
+   pads below it, so three in a row keep an even rhythm instead of stacking two
+   sections' worth of air at every seam. */
+.service-section {
+  padding-block: 0 var(--section-y);
+}
+
+.service-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+  border-top: 1px solid var(--line);
+}
+
+.service-detail-num {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  margin-bottom: 1.25rem;
+}
+
+.service-detail-head h2 {
+  max-width: 14ch;
+  margin-bottom: 0;
+}
+
+.service-detail-body > p {
+  max-width: 62ch;
+}
+
+/* the opening line carries the service — full-strength ink rather than the
+   muted grey .lead uses elsewhere, so it reads as a statement not a standfirst */
+.service-detail-body .lead {
+  color: var(--ink);
+  margin-bottom: 1.75rem;
+}
+
+/* same treatment as the subhead the slide panel used to carry */
+.service-detail-subhead {
+  font-family: var(--font-text);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: clamp(2rem, 3.5vw, 2.75rem) 0 1.25rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.service-detail-cta {
+  margin-top: clamp(2rem, 3.5vw, 2.75rem);
+}
+
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 3rem);
+  border-top: 1px solid var(--line);
+}
+
+.process-step {
+  padding-top: clamp(1.75rem, 3vw, 2.75rem);
+}
+
+.process-step .num {
+  display: block;
+  font-size: 0.6875rem;
+  letter-spacing: 0.13em;
+  color: var(--ink-faint);
+  margin-bottom: 1.25rem;
+}
+
+.process-step h3 {
+  font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+  margin-bottom: 0.6rem;
+}
+
+.process-step p {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 32ch;
 }
 
 /* --------------------------------------------------------------------------
@@ -1257,7 +1446,13 @@ strong {
 }
 
 /* --------------------------------------------------------------------------
-   Image placeholders — remove alongside the last <ImageSlot>
+   Image placeholders
+
+   The empty state of <ImageSlot>, shown until the matching upload exists in
+   Site Media (or, in the work grid, until the first case study is published).
+   Once a slot is filled it renders a plain <img>/<video> in the same position,
+   which the layout rules above already cover — so this block is only ever the
+   "not shot yet" case, not something the finished site depends on.
    -------------------------------------------------------------------------- */
 
 .image-slot {
@@ -1388,10 +1583,11 @@ strong {
   border-color: var(--line-strong);
 }
 
+/* same forest fill as the checked enquiry chip, so the same ink applies */
 .tag-active {
   background-color: var(--forest);
   border-color: var(--forest);
-  color: var(--paper);
+  color: var(--on-dark);
 }
 
 .tag-row {
@@ -1535,15 +1731,24 @@ strong {
   border-color: var(--ink);
 }
 
+/* --on-dark, not --paper: the fill is forest in both schemes, but --paper
+   inverts to near-black in dark mode and would put the label dark on dark. */
 .choice input:checked + span {
   background-color: var(--forest);
   border-color: var(--forest);
-  color: var(--paper);
+  color: var(--on-dark);
 }
 
 .choice input:focus-visible + span {
   outline: 1px solid var(--ink);
   outline-offset: 3px;
+}
+
+/* Cloudflare renders its own iframe here at a fixed size; this only reserves
+   the room so the submit button doesn't jump when the widget resolves. Empty
+   when no site key is configured, hence the :empty guard. */
+.turnstile:not(:empty) {
+  min-height: 65px;
 }
 
 .form-error {
@@ -1824,7 +2029,353 @@ strong {
   max-width: 20ch;
 }
 
-.post-info,
+/* --------------------------------------------------------------------------
+   Case study
+
+   One rail, about a third across, shared by the facts, the intro, the body and
+   the captions. The title is the only thing that starts at the page margin —
+   that break is what makes it read as a title.
+
+   Everything below leans on .cs-grid being applied identically wherever text
+   appears. Change the column ratio in one place and the whole article stays in
+   register; set widths per section and it drifts, which is exactly what the
+   old rule did (68ch centred in a 1680px container, under a hard-left header).
+   -------------------------------------------------------------------------- */
+
+.case-study {
+  /* 5/12 title, 7/12 rail — close to the reference's one-third break, but in
+     twelfths so it lands on the same rhythm as the rest of the site */
+  --cs-cols: minmax(0, 5fr) minmax(0, 7fr);
+  --cs-gap: clamp(1.5rem, 4vw, 4rem);
+  /* comfortable measure inside the rail, so a wide screen doesn't run the body
+     copy out to 100+ characters a line */
+  --cs-measure: 62ch;
+}
+
+.cs-grid {
+  display: grid;
+  grid-template-columns: var(--cs-cols);
+  gap: var(--cs-gap);
+}
+
+/* Everything that belongs on the rail sits in column 2. */
+.cs-rail,
+.cs-head-meta,
+.cs-statement {
+  grid-column: 2;
+}
+
+.cs-rail,
+.cs-intro {
+  max-width: var(--cs-measure);
+}
+
+.cs-head {
+  padding-block: clamp(3.5rem, 7vw, 6.5rem) clamp(2.5rem, 5vw, 4rem);
+  align-items: start;
+}
+
+.cs-head h1 {
+  margin: 0;
+  max-width: 14ch;
+}
+
+.cs-head .eyebrow {
+  margin-bottom: 1rem;
+}
+
+/* Stacked label/value pairs. The previous horizontal row put five facts on one
+   line and wrapped them mid-pair on anything narrow. */
+.cs-facts {
+  margin: 0;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.cs-fact dt {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.cs-fact dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--ink);
+}
+
+.cs-credit {
+  display: block;
+}
+
+.cs-intro {
+  margin: clamp(2rem, 4vw, 3rem) 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--ink-muted);
+}
+
+.cs-hero {
+  --media-h: min(78vh, 860px);
+  margin-bottom: clamp(3rem, 6vw, 5.5rem);
+}
+
+.cs-body {
+  padding-bottom: var(--section-y);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.cs-text-row p {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  color: var(--ink-muted);
+}
+
+/* The big type moment. Ink rather than muted — it is the one line in the
+   article that is making an argument rather than describing something. */
+.cs-statement {
+  margin: clamp(1.5rem, 3vw, 3rem) 0;
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.4vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+  color: var(--ink);
+}
+
+/* Section headings. These are what turn a long study into something skimmable —
+   a client reads the headings and stops at the one they care about. */
+.cs-section-heading {
+  margin: 0;
+  font-size: clamp(1.25rem, 1.9vw, 1.6rem);
+  letter-spacing: -0.014em;
+}
+
+.cs-section-row .eyebrow {
+  margin-bottom: 0.75rem;
+}
+
+.cs-section-body {
+  margin: 1rem 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  color: var(--ink-muted);
+}
+
+/* ── Colour system ─────────────────────────────────────────────────────────
+   Swatches on the rail, alongside the article's text rather than breaking out
+   of it. The chip is big enough to judge the colour; the usage line under it is
+   the part that carries the argument.
+
+   auto-fill, not auto-fit: with six colours in four tracks, auto-fit would
+   collapse the empty tracks and stretch the last two chips to double width.
+   auto-fill keeps the tracks, so the final row lines up with the one above. */
+
+.cs-palette {
+  grid-column: 2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--cs-chip, 11rem), 1fr));
+  gap: clamp(1.5rem, 3vw, 2.25rem) clamp(1rem, 1.8vw, 1.5rem);
+}
+
+.cs-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.cs-swatch-chip {
+  display: block;
+  height: clamp(5.5rem, 9vw, 8rem);
+  margin-bottom: 0.7rem;
+  /* the hairline is what makes a white or near-white swatch read as a block
+     rather than as a hole in the page */
+  border: 1px solid var(--line);
+}
+
+.cs-swatch-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.cs-swatch-hex {
+  font-size: 0.75rem;
+  letter-spacing: 0.07em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+
+.cs-swatch-usage {
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+/* ── Typography ────────────────────────────────────────────────────────────
+   Specimen first, name underneath — you judge a face by looking at it, not by
+   reading its name. */
+
+.cs-type {
+  grid-column: 2;
+  margin: 0;
+  display: grid;
+  gap: clamp(1.75rem, 3.5vw, 3rem);
+}
+
+.cs-type-face {
+  padding-bottom: clamp(1.25rem, 2.5vw, 2rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.cs-type-sample {
+  margin: 0 0 0.85rem;
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.cs-type-face dt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.5rem;
+  font-size: 0.8125rem;
+}
+
+.cs-type-family {
+  color: var(--ink);
+}
+
+.cs-type-role,
+.cs-type-notes {
+  color: var(--ink-faint);
+}
+
+/* ── Gallery labels ───────────────────────────────────────────────────────── */
+
+.cs-shot {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cs-shot-label {
+  margin-top: 0.6rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Captions ride the rail, so they line up with the body rather than with the
+   edge of whatever image they follow. */
+.cs-media figcaption,
+.cs-gallery figcaption {
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+  color: var(--ink-faint);
+}
+
+.cs-media {
+  margin: 0;
+}
+
+.cs-media--full .cs-media-inner img,
+.cs-media--full .cs-media-inner video {
+  width: 100%;
+  height: auto;
+}
+
+/* Screenshots want a frame. A browser window bled to the page edge stops
+   reading as a picture of a website and starts reading as the website. */
+.cs-media--framed .cs-media-inner {
+  background-color: var(--paper-alt);
+  padding: clamp(1.5rem, 5vw, 5rem) clamp(1rem, 5vw, 5rem);
+}
+
+.cs-media--framed .cs-media-inner img,
+.cs-media--framed .cs-media-inner video {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  height: auto;
+  border: 1px solid var(--line);
+}
+
+.cs-gallery {
+  margin: 0;
+}
+
+.cs-gallery-row {
+  display: grid;
+  gap: clamp(0.5rem, 1.4vw, 1.25rem);
+  grid-template-columns: repeat(var(--cs-shots, 2), minmax(0, 1fr));
+}
+
+.cs-gallery-row[data-count='3'] {
+  --cs-shots: 3;
+}
+
+.cs-gallery-row[data-count='4'] {
+  --cs-shots: 4;
+}
+
+.cs-gallery-row img,
+.cs-gallery-row video {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+@media (max-width: 900px) {
+  /* One column. The rail collapses to the gutter, so the title and the body
+     share a left edge instead of the body sitting in a phantom second column. */
+  .case-study {
+    --cs-cols: minmax(0, 1fr);
+  }
+
+  .cs-rail,
+  .cs-head-meta,
+  .cs-statement,
+  .cs-type,
+  .cs-palette {
+    grid-column: 1;
+  }
+
+  .cs-head h1 {
+    max-width: 18ch;
+  }
+
+  .cs-gallery-row,
+  .cs-gallery-row[data-count='3'],
+  .cs-gallery-row[data-count='4'] {
+    --cs-shots: 2;
+  }
+}
+
+@media (max-width: 560px) {
+  /* At 390px the content column is ~350px, and two 11rem tracks need 352 — it
+     misses by two pixels and drops to a single column, which turns six colours
+     into six full-width blocks. A smaller floor keeps the pair. */
+  .cs-palette {
+    --cs-chip: 8rem;
+  }
+}
+
+/* Journal byline only. The case study's own fact list moved to .cs-facts,
+   which stacks instead of running along one line. */
 .post-byline {
   display: flex;
   flex-wrap: wrap;
@@ -1835,7 +2386,6 @@ strong {
   color: var(--ink-muted);
 }
 
-.post-info > *,
 .post-byline > * {
   margin: 0;
 }
@@ -1844,7 +2394,6 @@ strong {
   padding-bottom: var(--section-y);
 }
 
-.text-block,
 .rich-text {
   max-width: 68ch;
   margin-inline: auto;
@@ -1852,18 +2401,15 @@ strong {
   line-height: 1.72;
 }
 
-.text-block h2,
 .rich-text h2 {
   font-size: clamp(1.5rem, 2.2vw, 2rem);
   margin-top: 2.5em;
 }
 
-.text-block h3,
 .rich-text h3 {
   margin-top: 2em;
 }
 
-.text-block p,
 .rich-text p {
   color: var(--ink-muted);
   max-width: none;
@@ -1899,11 +2445,9 @@ strong {
   margin-bottom: 0.5rem;
 }
 
-.media-block {
-  margin-block: clamp(2.5rem, 5vw, 4rem);
-}
-
-.media-block figcaption {
+/* Images embedded in a journal body. The case study's captions ride the rail
+   instead — see .cs-media figcaption. */
+.rich-text figcaption {
   padding-top: 0.85rem;
   font-size: 0.8125rem;
   color: var(--ink-faint);
@@ -2289,6 +2833,13 @@ strong {
   flex-shrink: 0;
 }
 
+/* name over role, rather than the two run together on one line */
+.testimonial-credit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
 .testimonial-name {
   font-size: 0.9375rem;
   color: var(--ink);
@@ -2297,6 +2848,7 @@ strong {
 
 .testimonial-role {
   font-size: 0.8125rem;
+  line-height: 1.3;
   color: var(--ink-faint);
   margin: 0;
 }
@@ -2534,6 +3086,22 @@ strong {
   margin-bottom: 0;
 }
 
+/* same treatment as the address in the contact panel — a quiet text link, so it
+   reads as a second route rather than competing with the footer's button */
+.about-studio-email {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line-strong);
+  padding-bottom: 0.2rem;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.about-studio-email:hover {
+  border-bottom-color: var(--ink);
+}
+
 /* --------------------------------------------------------------------------
    Misc
    -------------------------------------------------------------------------- */
@@ -2590,7 +3158,8 @@ html.is-scroll-locked body {
   .hero-body,
   .statement,
   .statement-layout,
-  .contact-layout {
+  .contact-layout,
+  .service-detail {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -2604,8 +3173,24 @@ html.is-scroll-locked body {
     max-width: 14ch;
   }
 
+  /* stacked under the lead now, so there's no column edge to finish against */
+  .hero-actions {
+    justify-content: flex-start;
+  }
+
+  /* summary drops beneath the title rather than squeezing beside it */
   .service-row {
-    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  /* the head is no longer a column beside the body — let the title run wider */
+  .service-detail-head h2 {
+    max-width: 20ch;
+  }
+
+  .process-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   /* stacked hairlines read as one block on a dark background — give each plan
@@ -2677,24 +3262,37 @@ html.is-scroll-locked body {
     padding-bottom: 0;
   }
 
+  .process-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .process-step {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .process-step:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .process-step p {
+    max-width: none;
+  }
+
   /* number above the title, arrow centred alongside */
   .service-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.6rem 1.25rem;
+    gap: 0.6rem;
   }
 
-  .service-num {
-    grid-area: 1 / 1;
-    padding-top: 0;
+  /* the index stays on the title's line, just closer in */
+  .service-head {
+    gap: 0.8rem;
   }
 
-  .service-main {
-    grid-area: 2 / 1;
-  }
-
-  .service-open {
-    grid-area: 1 / 2 / 3 / 3;
-    align-self: center;
+  .service-summary {
+    max-width: none;
   }
 
   .form-row,
@@ -2726,9 +3324,17 @@ html.is-scroll-locked body {
 /* --------------------------------------------------------------------------
    Dark scheme
 
-   Follows the operating system and nothing else — there is no toggle, so the
-   only thing that decides is prefers-color-scheme. Everything below is a token
-   swap; no component knows which scheme it is in.
+   The colours themselves live in the light-dark() pairs at the top of this
+   file, so there is no second palette down here to keep in sync. All that is
+   left is deciding which half of every pair applies:
+
+     no data-theme        follow the OS (color-scheme: light dark)
+     data-theme="light"   pin light, whatever the OS says
+     data-theme="dark"    pin dark
+
+   The attribute is stamped on <html> before first paint by THEME_INIT in
+   layout.tsx, and only exists once someone has actually used the toggle.
+   Without JavaScript it is never set, and the OS keeps deciding.
 
    The forest panels (.section-dark, the footer, the lightbox) stay green in
    both schemes. In light they sit darker than the page; in dark they sit
@@ -2736,38 +3342,41 @@ html.is-scroll-locked body {
    than merging into the background.
    -------------------------------------------------------------------------- */
 
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* The two rules below can't be folded together: one is conditional on the OS,
+   the other on the attribute, and a media query can't join a plain selector.
+   Both say the same thing — anything keyed to darkness that isn't a colour
+   token has to be listed in each.
+
+   photography carries a lot of white — take the glare off without washing the
+   colour out; and the toggle's half-filled disc turns over so the solid half
+   swaps side. Doing that here rather than from React state means it is already
+   correct in the first frame. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-
-    --paper: #0a1413;
-    --paper-alt: #0f1c1a;
-    --forest: #14302c;
-    --forest-deep: #0d2220;
-
-    --ink: #e8e6dd;
-    --ink-muted: #9aa8a3;
-    --ink-faint: #6f7f7a;
-
-    --line: rgba(232, 230, 221, 0.14);
-    --line-strong: rgba(232, 230, 221, 0.32);
-
-    /* flipped: on a dark page the light button is the loud one */
-    --accent: #e8e6dd;
-    --accent-ink: #0a1413;
-
-    --paper-blur: rgba(10, 20, 19, 0.92);
-    --tint: rgba(232, 230, 221, 0.05);
-    --scrim: rgba(0, 0, 0, 0.62);
-    --danger: #e39289;
-  }
-
-  /* photography carries a lot of white — take the glare off without washing
-     the colour out */
-  img,
-  video {
+  :root:not([data-theme='light']) img,
+  :root:not([data-theme='light']) video {
     opacity: 0.94;
   }
+
+  :root:not([data-theme='light']) .theme-toggle-icon {
+    transform: rotate(180deg);
+  }
+}
+
+:root[data-theme='dark'] img,
+:root[data-theme='dark'] video {
+  opacity: 0.94;
+}
+
+:root[data-theme='dark'] .theme-toggle-icon {
+  transform: rotate(180deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2784,4 +3393,46 @@ html.is-scroll-locked body {
     /* otherwise staggered rows still wait their turn */
     transition-delay: 0s !important;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Draft preview banner
+
+   Only rendered while Next's draft mode is on, which only a signed-in admin
+   coming through /next/preview can switch on. Deliberately loud: the whole
+   point is that you cannot mistake unpublished work for the live site.
+   -------------------------------------------------------------------------- */
+
+.preview-banner {
+  position: sticky;
+  /* tucks under .site-header rather than fighting it — that one is also sticky
+     at top: 0, so both pinned at 0 would just overlap */
+  top: var(--header-h);
+  z-index: 90; /* under the header (100), over everything it scrolls past */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 1rem;
+  padding: 0.6rem var(--gutter);
+  background: var(--forest-deep);
+  color: var(--on-dark);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.preview-banner strong {
+  font-weight: 500;
+}
+
+.preview-banner a {
+  color: var(--on-dark);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  white-space: nowrap;
+}
+
+.preview-banner a:hover {
+  opacity: 0.78;
 }

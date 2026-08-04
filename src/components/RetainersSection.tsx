@@ -1,9 +1,11 @@
-'use client'
-
 import React from 'react'
 
 import { ContactTrigger } from '@/components/ContactPanel'
 import { ArrowRight } from '@/components/icons'
+
+// Deliberately not 'use client': nothing here is interactive. The only client
+// piece is <ContactTrigger>, which is its own client component and renders fine
+// from the server — so the plan data and markup stay off the client bundle.
 
 const plans = [
   {

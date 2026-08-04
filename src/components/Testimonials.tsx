@@ -83,9 +83,9 @@ export default function Testimonials({ items }: { items: TestimonialCard[] }) {
                     decoding="async"
                   />
                 )}
-                <span>
+                <span className="testimonial-credit">
                   <span className="testimonial-name">{item.name}</span>
-                  {who && <span className="testimonial-role"> — {who}</span>}
+                  {who && <span className="testimonial-role">{who}</span>}
                 </span>
                 {logo && (
                   // eslint-disable-next-line @next/next/no-img-element -- media served from object storage, dimensions vary

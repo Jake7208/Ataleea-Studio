@@ -59,7 +59,7 @@ export default async function CommentsSection({ postId, postType }: Props) {
             ))}
           </ol>
         ) : (
-          <p className="comments-empty">No comments yet — be the first to leave one.</p>
+          <p className="comments-empty">No comments yet. Be the first to leave one.</p>
         )}
 
         <CommentForm postId={postId} postType={postType} />

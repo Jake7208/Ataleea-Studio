@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
+import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import React, { cache } from 'react'
@@ -10,6 +11,7 @@ import { siteConfig } from '@/site.config'
 import CommentsSection from '@/components/CommentsSection'
 import JournalList from '@/components/JournalList'
 import Media from '@/components/Media'
+import PreviewBanner from '@/components/PreviewBanner'
 import RichTextBody from '@/components/RichTextBody'
 import { mediaInfo } from '@/lib/media'
 
@@ -18,12 +20,17 @@ export const revalidate = 60
 
 type Props = { params: Promise<{ slug: string }> }
 
-// cache() dedupes the generateMetadata + page queries into one DB hit
-const getPost = cache(async (slug: string) => {
+// cache() dedupes the generateMetadata + page queries into one DB hit.
+// See the note in work/[slug] — `draft` can only be on for a signed-in admin
+// who came through /next/preview.
+const getPost = cache(async (slug: string, draft: boolean) => {
   const payload = await getPayload({ config: await config })
   const { docs } = await payload.find({
     collection: 'blog',
-    where: { slug: { equals: slug }, _status: { not_equals: 'draft' } },
+    where: draft
+      ? { slug: { equals: slug } }
+      : { slug: { equals: slug }, _status: { not_equals: 'draft' } },
+    draft,
     limit: 1,
     depth: 1,
   })
@@ -32,14 +39,20 @@ const getPost = cache(async (slug: string) => {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const post = await getPost(slug)
+  const { isEnabled } = await draftMode()
+  const post = await getPost(slug, isEnabled)
   if (!post) return {}
-  return { title: post.title, description: post.excerpt || post.title }
+  return {
+    title: post.title,
+    description: post.excerpt || post.title,
+    ...(isEnabled ? { robots: { index: false, follow: false } } : {}),
+  }
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params
-  const post = await getPost(slug)
+  const { isEnabled: isDraft } = await draftMode()
+  const post = await getPost(slug, isDraft)
   if (!post) notFound()
 
   const payload = await getPayload({ config: await config })
@@ -73,6 +86,8 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <article>
+      {isDraft && <PreviewBanner path={`/blog/${slug}`} />}
+
       <header className="post-hero container">
         <p className="eyebrow">Blog</p>
         <h1>{post.title}</h1>

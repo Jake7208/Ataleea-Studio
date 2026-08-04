@@ -42,11 +42,11 @@ export function ContactPanelProvider({ children }: { children: React.ReactNode }
       <SlidePanel open={isOpen} onClose={close} labelledBy="contact-panel-title">
         <span className="eyebrow">Contact</span>
         <h2 id="contact-panel-title" className="slide-panel-title">
-          Tell us about the project.
+          Tell me about the project.
         </h2>
         <p>
           A short note about your company and what you&rsquo;re trying to achieve is plenty to
-          start. We reply within a day.
+          start. I reply within a day.
         </p>
 
         {/* remount on topic change so the form picks up the new default */}

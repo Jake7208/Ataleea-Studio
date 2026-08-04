@@ -9,21 +9,21 @@ import { ArrowRight } from '@/components/icons'
 // section keeps its shape. Delete once the collection has content.
 const placeholders = [
   {
-    label: 'Project 01 — cover',
+    label: 'Project 01 cover',
     spec: 'Finished commercial build, exterior. Wide, straight on.',
-    meta: 'Commercial build — 2026',
+    meta: 'Commercial build, 2026',
     title: 'Project one',
   },
   {
-    label: 'Project 02 — cover',
+    label: 'Project 02 cover',
     spec: 'Structural or trade work mid-build. Show the craft.',
-    meta: 'Structural — 2026',
+    meta: 'Structural, 2026',
     title: 'Project two',
   },
   {
-    label: 'Project 03 — cover',
+    label: 'Project 03 cover',
     spec: 'Interior or fit-out, finished. Warm, well lit.',
-    meta: 'Interiors — 2026',
+    meta: 'Interiors, 2026',
     title: 'Project three',
   },
 ]

@@ -1,8 +1,10 @@
 'use client'
 
-import React, { useId, useState } from 'react'
+import React, { useCallback, useId, useState } from 'react'
 
+import Turnstile, { turnstileEnabled } from '@/components/Turnstile'
 import { CONTACT_TOPICS, type ContactTopic } from '@/lib/contact-topics'
+import { TURNSTILE_HEADER } from '@/lib/turnstile-header'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -22,6 +24,12 @@ export default function ContactForm({ initialTopic }: { initialTopic?: ContactTo
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [sent, setSent] = useState(false)
+  const [token, setToken] = useState<string | null>(null)
+  // Turnstile tokens are single use — bumping this remounts the widget for a
+  // fresh one after a failed attempt
+  const [challenge, setChallenge] = useState(0)
+
+  const onToken = useCallback((next: string | null) => setToken(next), [])
 
   const set =
     (key: 'name' | 'company' | 'email' | 'message') =>
@@ -34,13 +42,17 @@ export default function ContactForm({ initialTopic }: { initialTopic?: ContactTo
     if (values.name.trim().length < 2) return setError('Please enter your name.')
     if (!EMAIL_RE.test(values.email.trim())) return setError('Please enter a valid email address.')
     if (values.message.trim().length < 5) return setError('Please add a line or two about the project.')
+    if (turnstileEnabled && !token) return setError('Please complete the verification below.')
 
     setSubmitting(true)
     setError(null)
     try {
       const res = await fetch('/api/contact-submissions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { [TURNSTILE_HEADER]: token } : {}),
+        },
         body: JSON.stringify({
           name: values.company ? `${values.name.trim()} (${values.company.trim()})` : values.name.trim(),
           email: values.email.trim(),
@@ -52,7 +64,10 @@ export default function ContactForm({ initialTopic }: { initialTopic?: ContactTo
       setValues(empty)
       setSent(true)
     } catch {
-      setError('Something went wrong sending your message — please try again in a moment.')
+      setError('Something went wrong sending your message. Please try again in a moment.')
+      // that token is spent either way — hand them a fresh challenge
+      setToken(null)
+      setChallenge((n) => n + 1)
     } finally {
       setSubmitting(false)
     }
@@ -61,8 +76,8 @@ export default function ContactForm({ initialTopic }: { initialTopic?: ContactTo
   if (sent) {
     return (
       <div className="form-done">
-        <h3>Thanks — your message is in.</h3>
-        <p>We read everything that comes through and will reply within a day.</p>
+        <h3>Thanks, your message is in.</h3>
+        <p>I read everything that comes through and will reply within a day.</p>
         <button type="button" className="btn btn-outline" onClick={() => setSent(false)}>
           Send another
         </button>
@@ -150,6 +165,8 @@ export default function ContactForm({ initialTopic }: { initialTopic?: ContactTo
           required
         />
       </div>
+
+      <Turnstile key={challenge} onToken={onToken} />
 
       {error && (
         <p className="form-error" role="alert">

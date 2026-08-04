@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 
 import { siteConfig } from '@/site.config'
 import { ContactTrigger, useContactPanel } from '@/components/ContactPanel'
+import ThemeToggle from '@/components/ThemeToggle'
 import AtaleeaLogo from './AtaleeaLogo'
 
 export default function Header() {
@@ -19,37 +20,43 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="container site-header-inner">
-        <Link href="/" className="logo" aria-label={`${siteConfig.name} — home`}>
+        <Link href="/" className="logo" aria-label={`${siteConfig.name}, home`}>
           <AtaleeaLogo height={24} />
         </Link>
 
-        <nav className="site-nav">
-          {siteConfig.nav.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="nav-link"
-              aria-current={isActive(href) ? 'page' : undefined}
-            >
-              {label}
-            </Link>
-          ))}
-          <ContactTrigger className="btn btn-solid nav-cta">Start a project</ContactTrigger>
-        </nav>
+        {/* the toggle sits outside .site-nav so it survives the breakpoint that
+            hides the nav behind the burger */}
+        <div className="header-end">
+          <ThemeToggle />
 
-        <button
-          className="mobile-nav-toggle"
-          onClick={() => setMobileNavOpen(!mobileNavOpen)}
-          aria-label="Toggle navigation menu"
-          aria-expanded={mobileNavOpen}
-          aria-controls="mobile-nav"
-        >
-          {/* two bars that rotate into a cross — see .burger in styles.css */}
-          <span className="burger" aria-hidden="true">
-            <span className="burger-bar" />
-            <span className="burger-bar" />
-          </span>
-        </button>
+          <nav className="site-nav">
+            {siteConfig.nav.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="nav-link"
+                aria-current={isActive(href) ? 'page' : undefined}
+              >
+                {label}
+              </Link>
+            ))}
+            <ContactTrigger className="btn btn-solid nav-cta">Start a project</ContactTrigger>
+          </nav>
+
+          <button
+            className="mobile-nav-toggle"
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileNavOpen}
+            aria-controls="mobile-nav"
+          >
+            {/* two bars that rotate into a cross — see .burger in styles.css */}
+            <span className="burger" aria-hidden="true">
+              <span className="burger-bar" />
+              <span className="burger-bar" />
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* stays mounted so it can animate closed; inert while hidden */}

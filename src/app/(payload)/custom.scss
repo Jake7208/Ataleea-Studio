@@ -1,1 +1,221 @@
-/* Admin panel style overrides — empty by default. */
+/* The site's two faces, but requested as variable fonts over a 400–600 range
+   rather than the static 400/500 pair (frontend)/styles.css uses.
+
+   That range is doing real work. Payload's stylesheet asks for weight 600 in 38
+   places and 700 in 28 — load only 400 and 500 and the browser fakes both by
+   smearing the 500, which is what "bold, but wrong" looks like. Serving a
+   variable face declared `font-weight: 400 600` means every one of those
+   requests matches a real face: 600 renders as drawn, and 700 clamps to the top
+   of the axis instead of being synthesised. The panel comes out one step lighter
+   than stock Payload, which is the site's own restraint, and nothing is faked. */
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400..600&family=Inter:wght@400..600&display=swap');
+
+/* ==========================================================================
+   Ataleea Studio — admin panel
+   ==========================================================================
+
+   Payload builds its whole interface off two ramps: `--color-base-*` (a pure
+   grey 0→1000) and `--color-success/error/warning-*`. Every other token is
+   derived — `--theme-elevation-*` maps onto the base ramp and flips direction
+   under `[data-theme='dark']`, `--theme-bg`, `--theme-text` and the buttons all
+   read from that.
+
+   So the whole panel is rebranded by replacing the ramps, not by chasing
+   individual components. The base ramp below is the frontend's forest green
+   mixed into the greys, which is what makes the admin feel like the site
+   without any component-level overrides. Light and dark both follow.
+
+   Everything sits in `@layer payload` — Payload's own rules live in
+   `payload-default`, and a later layer beats an earlier one no matter how
+   specific the selector, so none of this needs !important.
+   ========================================================================== */
+
+@layer payload {
+  :root {
+    /* Neutral ramp, warmed toward the site's paper at the light end and pulled
+       to forest at the dark end. Same 0→1000 direction Payload expects. */
+    --color-base-0: #fbfaf6;
+    --color-base-50: #f4f3ec;
+    --color-base-100: #ebeae1;
+    --color-base-150: #dedcd2;
+    --color-base-200: #cfcec3;
+    --color-base-250: #bfbfb4;
+    --color-base-300: #b0b0a5;
+    --color-base-350: #9fa298;
+    --color-base-400: #8d928a;
+    --color-base-450: #7d837c;
+    --color-base-500: #6d746e;
+    --color-base-550: #5f6761;
+    --color-base-600: #525b56;
+    --color-base-650: #464f4b;
+    --color-base-700: #3a4441;
+    --color-base-750: #2f3936;
+    --color-base-800: #253330;
+    --color-base-850: #1a2725;
+    --color-base-900: #0f2d2b;
+    --color-base-950: #0a2120;
+    --color-base-1000: #061413;
+
+    /* Payload uses "success" as its accent — the primary action colour, the
+       focus ring, the saved indicator. Its default is a bright blue, which is
+       the single loudest thing in the panel and the one that most makes it read
+       as somebody else's software. Retuned to the site's forest. */
+    --color-success-50: #eef2f0;
+    --color-success-100: #dce6e3;
+    --color-success-150: #c3d4cf;
+    --color-success-200: #a9c2bb;
+    --color-success-250: #8fb0a7;
+    --color-success-300: #759e93;
+    --color-success-350: #5c8c7f;
+    --color-success-400: #467a6c;
+    --color-success-450: #34685c;
+    --color-success-500: #2a5c50;
+    --color-success-550: #235047;
+    --color-success-600: #1d463e;
+    --color-success-650: #183c36;
+    --color-success-700: #14332e;
+    --color-success-750: #112c28;
+    --color-success-800: #0f2523;
+    --color-success-850: #0d1f1e;
+    --color-success-900: #0b1a19;
+    --color-success-950: #091514;
+
+    /* The frontend's own faces, so a heading in the admin sets the same way it
+       will on the page. */
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-serif: 'Inter Tight', Georgia, serif;
+
+    /* Square corners. The site has no rounded edges anywhere and the default
+       3–8px radii were the other half of the "generic CMS" read. */
+    --style-radius-s: 0px;
+    --style-radius-m: 0px;
+    --style-radius-l: 0px;
+  }
+
+  html {
+    /* Payload's own hairlines are a flat grey; the site's are the ink colour at
+       low alpha, which is what keeps rules from cutting the page in half. */
+    --theme-border-color: rgba(15, 45, 43, 0.16);
+
+    /* Belt to the variable-range braces above: never let the browser draw a
+       weight the font doesn't have. If a face ever fails to load, text falls
+       back to the real system weight rather than a smeared fake of it. */
+    font-synthesis: none;
+  }
+
+  html[data-theme='dark'] {
+    --theme-border-color: rgba(232, 230, 221, 0.16);
+    /* Inputs sit a step off the page rather than on it, as they do in light. */
+    --theme-input-bg: var(--color-base-850);
+  }
+
+  /* ── Brand marks ───────────────────────────────────────────────────────────
+     <AdminLogo> / <AdminIcon> in components/admin/Graphics.tsx. The frontend's
+     logo CSS isn't loaded in here, so the lockup is styled from scratch. */
+
+  .ataleea-logo {
+    display: flex;
+    align-items: center;
+    color: var(--theme-text);
+
+    .logo-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6em;
+    }
+
+    .logo-mark {
+      display: block;
+      flex-shrink: 0;
+      /* the login card narrows on small screens; never let the mark push it wider */
+      max-width: 100%;
+    }
+
+    .logo-word {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      letter-spacing: -0.015em;
+      line-height: 1;
+    }
+  }
+
+  /* Login screen. `.login__brand` centres this, and the lockup is a single
+     horizontal row — so it just needs to not fight that. */
+  .ataleea-logo--full {
+    justify-content: center;
+  }
+
+  /* Header breadcrumb mark. Fills the 18px square Payload gives it — see the
+     note in components/admin/Graphics.tsx. */
+  .ataleea-icon {
+    display: block;
+    color: var(--theme-elevation-800);
+  }
+
+  /* ── Typography ────────────────────────────────────────────────────────────
+     Payload sets headings in the body face at default weight. The site sets
+     every heading in Inter Tight, tighter — matching it is most of what makes
+     the two feel like one product. */
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .doc-header__title,
+  .step-nav {
+    font-family: var(--font-serif);
+    letter-spacing: -0.015em;
+  }
+
+  /* The collection name above each list, and the field labels, are the two bits
+     of chrome you read constantly — the site's eyebrow treatment suits both. */
+  .nav-group__label,
+  .field-label {
+    letter-spacing: 0.04em;
+  }
+
+  .nav-group__label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--theme-elevation-450);
+  }
+
+  /* ── Login ─────────────────────────────────────────────────────────────────
+     The one screen anyone outside the studio might see. */
+
+  .template-minimal {
+    background: var(--theme-elevation-0);
+  }
+
+  .login__form,
+  .create-first-user {
+    /* a single hairline frame instead of Payload's shadowed card — the site
+       has no drop shadows in it anywhere */
+    border: 1px solid var(--theme-border-color);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    box-shadow: none;
+  }
+
+  /* ── Media library ─────────────────────────────────────────────────────────
+     The thumbnails are the point of that collection; give them room and stop
+     the grid cropping them into unreadable slivers. */
+
+  .thumbnail {
+    background-color: var(--theme-elevation-50);
+    border-radius: 0;
+  }
+
+  .file-field__thumbnail,
+  .thumbnail-card__thumbnail,
+  .file-details-draggable__thumbnail,
+  .upload-relationship-details__thumbnail {
+    border: 1px solid var(--theme-border-color);
+  }
+
+  /* An upload field with nothing in it should read as an empty frame waiting for
+     a file, matching the placeholder slots on the site itself. */
+  .upload__dropzone {
+    border-radius: 0;
+  }
+}

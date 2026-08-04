@@ -101,8 +101,12 @@ export interface Config {
     defaultIDType: string;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'site-media': SiteMedia;
+  };
+  globalsSelect: {
+    'site-media': SiteMediaSelect<false> | SiteMediaSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -132,11 +136,17 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Who can sign in to this admin. Keep it to the people who need it.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: string;
+  /**
+   * Shown in the admin instead of the bare email address.
+   */
+  name?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -157,11 +167,16 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Every image and video on the site lives here. Upload once, then point a case study, journal post or page slot at it.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: string;
+  /**
+   * What the picture shows, in a sentence — read aloud by screen readers and shown if the file fails to load.
+   */
   alt: string;
   /**
    * Tagged images appear in the site gallery, filterable by tag.
@@ -272,11 +287,84 @@ export interface CaseStudy {
             blockType: 'text';
           }
         | {
+            /**
+             * One sentence, set large — the point of the project rather than a description of it. Use sparingly; two or three in a case study is plenty.
+             */
+            text: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'statement';
+          }
+        | {
+            /**
+             * Optional kicker above the heading. Numbering them helps a long study.
+             */
+            eyebrow?: string | null;
+            heading: string;
+            /**
+             * Optional lead paragraph. Add Text blocks below for the rest.
+             */
+            body?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'section';
+          }
+        | {
+            swatches: {
+              name: string;
+              hex: string;
+              /**
+               * What the colour is for. This is the part clients actually read.
+               */
+              usage?: string | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'palette';
+          }
+        | {
+            faces: {
+              family: string;
+              role?: string | null;
+              /**
+               * Shown large as the specimen. Leave blank to use the typeface name itself.
+               */
+              sample?: string | null;
+              notes?: string | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'typeSpecimen';
+          }
+        | {
             media: string | Media;
+            /**
+             * Photographs usually want full bleed. Screenshots want framing — a browser window running to the page edge reads as the page itself rather than as a picture of one.
+             */
+            display?: ('full' | 'framed') | null;
             caption?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'mediaBlock';
+          }
+        | {
+            images: {
+              media: string | Media;
+              /**
+               * Optional tag under the image. This is how you pair a desktop and a mobile shot in one row.
+               */
+              label?: string | null;
+              id?: string | null;
+            }[];
+            /**
+             * Optional — describes the row as a whole.
+             */
+            caption?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'gallery';
           }
       )[]
     | null;
@@ -442,6 +530,15 @@ export interface Comment {
    * How many readers liked this comment.
    */
   likes?: number | null;
+  voters?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -552,6 +649,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -666,10 +764,70 @@ export interface CaseStudiesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        statement?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+              blockName?: T;
+            };
+        section?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              body?: T;
+              id?: T;
+              blockName?: T;
+            };
+        palette?:
+          | T
+          | {
+              swatches?:
+                | T
+                | {
+                    name?: T;
+                    hex?: T;
+                    usage?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        typeSpecimen?:
+          | T
+          | {
+              faces?:
+                | T
+                | {
+                    family?: T;
+                    role?: T;
+                    sample?: T;
+                    notes?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
         mediaBlock?:
           | T
           | {
               media?: T;
+              display?: T;
+              caption?: T;
+              id?: T;
+              blockName?: T;
+            };
+        gallery?:
+          | T
+          | {
+              images?:
+                | T
+                | {
+                    media?: T;
+                    label?: T;
+                    id?: T;
+                  };
               caption?: T;
               id?: T;
               blockName?: T;
@@ -756,6 +914,7 @@ export interface CommentsSelect<T extends boolean = true> {
   body?: T;
   approved?: T;
   likes?: T;
+  voters?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -798,6 +957,47 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * The fixed images built into the page layouts. Each field says what the shot needs to be — leave one blank and the brief shows in its place on the site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-media".
+ */
+export interface SiteMedia {
+  id: string;
+  home?: {
+    /**
+     * One finished project, wide. Building in full, shot straight on in good light. Sits full-bleed under the headline, so keep the subject off the extreme edges.
+     */
+    hero?: (string | null) | Media;
+    /**
+     * Close crop on craft: a material joint, a hand at work, a finished edge. Tall — it fills a portrait column beside the “most construction websites…” copy.
+     */
+    statement?: (string | null) | Media;
+    /**
+     * Edge-to-edge site or interior shot. Wide, quiet, no text overlay. A visual pause between the work grid and the testimonials.
+     */
+    band?: (string | null) | Media;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-media_select".
+ */
+export interface SiteMediaSelect<T extends boolean = true> {
+  home?:
+    | T
+    | {
+        hero?: T;
+        statement?: T;
+        band?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

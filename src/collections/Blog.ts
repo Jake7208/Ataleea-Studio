@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
 import { siteConfig } from '../site.config'
+import { revalidateFor } from '../lib/revalidate'
+import { previewFor } from '../lib/preview'
 
 const slugify = (value: string): string =>
   value
@@ -18,12 +20,15 @@ export const Blog: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', '_status', 'publishedAt', 'updatedAt'],
+    group: 'Content',
+    preview: previewFor('/blog'),
   },
   versions: {
     drafts: {
       autosave: true,
     },
   },
+  hooks: revalidateFor({ paths: ['/blog'], detail: (slug) => `/blog/${slug}` }),
   access: {
     // the public only sees published posts; logged-in users see everything
     read: ({ req }) => {

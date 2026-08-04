@@ -47,7 +47,7 @@ export default async function BlogIndexPage() {
           <JournalList posts={posts} />
         ) : (
           <div className="empty-state">
-            <p>Nothing published yet — the first post is coming.</p>
+            <p>Nothing published yet. The first post is coming.</p>
           </div>
         )}
       </section>

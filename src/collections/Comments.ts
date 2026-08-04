@@ -1,6 +1,31 @@
 import type { CollectionConfig, PayloadRequest } from 'payload'
 import { APIError } from 'payload'
 import { revalidatePath } from 'next/cache'
+import { createHash } from 'crypto'
+
+import { assertHuman } from '@/lib/turnstile'
+
+/** How many fingerprints a single comment keeps before the oldest fall off. */
+const MAX_VOTERS = 500
+
+/**
+ * Identifies a liker without storing anything identifying: the address is
+ * hashed with the comment id and the app secret, so the value is useless
+ * outside this one comment and can't be reversed into an IP.
+ *
+ * Best-effort by nature — a new address is a new vote. It exists to stop the
+ * endpoint being looped, not to be an identity system. The button also tracks
+ * liked comments in localStorage, which covers the ordinary case.
+ */
+const voterFingerprint = (req: PayloadRequest, commentId: string): string => {
+  const ip =
+    req.headers?.get('cf-connecting-ip') ||
+    req.headers?.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    'unknown'
+  return createHash('sha256')
+    .update(`${ip}:${commentId}:${process.env.PAYLOAD_SECRET ?? ''}`)
+    .digest('hex')
+}
 
 type CommentTarget = 'blog' | 'case-studies'
 
@@ -54,6 +79,7 @@ export const Comments: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'post', 'approved', 'createdAt'],
+    group: 'Inbox',
   },
   access: {
     // anyone can leave a comment, but only approved ones are readable publicly
@@ -66,6 +92,13 @@ export const Comments: CollectionConfig = {
     delete: ({ req }) => Boolean(req.user),
   },
   hooks: {
+    // create is open to the public. Moderation keeps spam off the page, but
+    // nothing kept it out of the admin queue until this.
+    beforeValidate: [
+      async ({ operation, req }) => {
+        if (operation === 'create') await assertHuman(req)
+      },
+    ],
     // only the approved state is visible on the page, so a brand-new (unapproved)
     // comment doesn't need to bust the cache — approving or unapproving one does.
     // Likes flip `skipRevalidate` on: they change often and are reconciled on the
@@ -149,6 +182,22 @@ export const Comments: CollectionConfig = {
         description: 'How many readers liked this comment.',
       },
     },
+    {
+      name: 'voters',
+      type: 'json',
+      defaultValue: [],
+      // Salted one-way hashes, never raw addresses — see voterFingerprint below.
+      // Admin-only on every operation so the list can't be read back or seeded
+      // through the public API; the like endpoint writes it with overrideAccess.
+      access: {
+        read: ({ req }) => Boolean(req.user),
+        create: ({ req }) => Boolean(req.user),
+        update: ({ req }) => Boolean(req.user),
+      },
+      admin: {
+        hidden: true,
+      },
+    },
   ],
   endpoints: [
     // Public "like" — anyone can add one to an approved comment. Mounted at
@@ -180,19 +229,31 @@ export const Comments: CollectionConfig = {
           throw new APIError('Comment not found', 404)
         }
 
-        const likes = (typeof comment.likes === 'number' ? comment.likes : 0) + 1
+        const current = typeof comment.likes === 'number' ? comment.likes : 0
+        const voters: string[] = Array.isArray(comment.voters) ? (comment.voters as string[]) : []
+        const fingerprint = voterFingerprint(req, id)
+
+        // Already counted. Answer with the real total rather than an error — the
+        // button only wants the number, and a 4xx here would make it roll back a
+        // like that did land.
+        if (voters.includes(fingerprint)) {
+          return Response.json({ likes: current, counted: false })
+        }
+
+        const likes = current + 1
 
         await req.payload.update({
           collection: 'comments',
           id,
-          data: { likes },
+          // capped so a comment that gets hammered can't grow an unbounded field
+          data: { likes, voters: [...voters, fingerprint].slice(-MAX_VOTERS) },
           depth: 0,
           overrideAccess: true,
           context: { skipRevalidate: true },
           req,
         })
 
-        return Response.json({ likes })
+        return Response.json({ likes, counted: true })
       },
     },
   ],

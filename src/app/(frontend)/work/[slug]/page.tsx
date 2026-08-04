@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getPayload } from 'payload'
+import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import React, { cache } from 'react'
@@ -8,18 +9,26 @@ import config from '@/payload.config'
 import ArticleBody from '@/components/ArticleBody'
 import CaseStudyGrid from '@/components/CaseStudyGrid'
 import CommentsSection from '@/components/CommentsSection'
+import PreviewBanner from '@/components/PreviewBanner'
 
 // statically rendered per slug, refreshed in the background at most once a minute
 export const revalidate = 60
 
 type Props = { params: Promise<{ slug: string }> }
 
-// cache() dedupes the generateMetadata + page queries into one DB hit
-const getPost = cache(async (slug: string) => {
+// cache() dedupes the generateMetadata + page queries into one DB hit.
+// `draft` comes from Next's draft mode, which only /next/preview can switch on
+// and only for a signed-in admin — so an ordinary visitor always takes the
+// published branch here.
+const getPost = cache(async (slug: string, draft: boolean) => {
   const payload = await getPayload({ config: await config })
   const { docs } = await payload.find({
     collection: 'case-studies',
-    where: { slug: { equals: slug }, _status: { not_equals: 'draft' } },
+    where: draft
+      ? { slug: { equals: slug } }
+      : { slug: { equals: slug }, _status: { not_equals: 'draft' } },
+    // returns the newest autosaved version rather than the last published one
+    draft,
     limit: 1,
     depth: 1,
   })
@@ -28,14 +37,21 @@ const getPost = cache(async (slug: string) => {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const post = await getPost(slug)
+  const { isEnabled } = await draftMode()
+  const post = await getPost(slug, isEnabled)
   if (!post) return {}
-  return { title: post.title, description: post.excerpt || post.roles || post.title }
+  return {
+    title: post.title,
+    description: post.excerpt || post.roles || post.title,
+    // a draft is not for the index even if someone shares the preview link
+    ...(isEnabled ? { robots: { index: false, follow: false } } : {}),
+  }
 }
 
 export default async function CaseStudyPage({ params }: Props) {
   const { slug } = await params
-  const post = await getPost(slug)
+  const { isEnabled: isDraft } = await draftMode()
+  const post = await getPost(slug, isDraft)
   if (!post) notFound()
 
   const payload = await getPayload({ config: await config })
@@ -50,6 +66,8 @@ export default async function CaseStudyPage({ params }: Props) {
 
   return (
     <>
+      {isDraft && <PreviewBanner path={`/work/${slug}`} />}
+
       <ArticleBody post={post} />
 
       <CommentsSection postId={post.id} postType="case-studies" />

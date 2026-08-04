@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateFor } from '../lib/revalidate'
 
 export const Testimonials: CollectionConfig = {
   slug: 'testimonials',
@@ -10,9 +11,11 @@ export const Testimonials: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'role', 'featured', 'updatedAt'],
     description: 'Drag rows in this list to set the order they appear on the site.',
+    group: 'Content',
   },
   // drag-and-drop ordering in the admin list — the site sorts by this
   orderable: true,
+  hooks: revalidateFor({ paths: ['/'] }),
   access: {
     read: () => true,
   },

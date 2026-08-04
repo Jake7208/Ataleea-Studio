@@ -87,7 +87,7 @@ export default function CommentLikeButton({
       aria-pressed={liked}
       aria-label={
         liked
-          ? `Liked — ${likes} ${likes === 1 ? 'like' : 'likes'}`
+          ? `Liked, ${likes} ${likes === 1 ? 'like' : 'likes'}`
           : 'Like this comment'
       }
     >

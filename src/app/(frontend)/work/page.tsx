@@ -10,7 +10,8 @@ export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Work',
-  description: 'Selected projects — websites, photography and local search for trades and service companies.',
+  description:
+    'Selected projects: websites and local search for construction companies and the trades around them.',
 }
 
 export default async function WorkPage() {
@@ -40,7 +41,7 @@ export default async function WorkPage() {
           <WorkIndex posts={posts} />
         ) : (
           <div className="empty-state">
-            <p>Case studies are being written — check back soon.</p>
+            <p>Case studies are being written. Check back soon.</p>
           </div>
         )}
       </section>

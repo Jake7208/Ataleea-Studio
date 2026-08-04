@@ -8,7 +8,7 @@ import { ArrowRight } from '@/components/icons'
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Ataleea is a small studio building image-led websites and local search for contractors, trades and service companies.',
+    'Ataleea is a one person studio building websites and local search for construction companies and the trades around them.',
 }
 
 // how the studio works, rather than what it sells — the services section
@@ -48,9 +48,9 @@ export default function AboutPage() {
           </div>
           <div>
             <p>
-              I build image-led websites for contractors, trades and service companies —
-              businesses whose strongest argument is the work itself, photographed properly and
-              put somewhere a client can actually find it.
+              I build websites for construction companies and the trades around them. Businesses
+              whose strongest argument is the work itself, photographed properly and put somewhere
+              a client can actually find it.
             </p>
             <p>
               Most of the people I work with are very good at what they do and badly served by the
@@ -98,11 +98,11 @@ export default function AboutPage() {
               first, and someone keeping both current afterwards.
             </p>
             <p>
-              If you want the detail — what is included, what it costs, how long it takes — the
-              services and care plans are all written out on the home page.
+              If you want the detail on what is included, what it costs and how long it takes,
+              it is all written out on the services page.
             </p>
             <p className="about-links">
-              <Link href="/#services" className="link-arrow">
+              <Link href="/services" className="link-arrow">
                 Services and plans
                 <ArrowRight />
               </Link>
@@ -115,17 +115,21 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* no call to action here — the footer carries one on every page, and it
-          lands immediately below this block */}
+      {/* no button here — the footer's "Start a project" lands immediately below.
+          This block is the other channel: a plain address for people who would
+          rather write than fill anything in. */}
       <section className="section container">
         <div className="about-studio" data-reveal>
           <div>
             <span className="eyebrow">Studio</span>
             <p className="lead">
-              {siteConfig.location.line1} — {siteConfig.location.line2}. Reach me at{' '}
-              <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>.
+              If you would rather write a couple of lines than fill in a form, this reaches me
+              directly. I reply within a day.
             </p>
           </div>
+          <a className="about-studio-email" href={`mailto:${siteConfig.email}`}>
+            {siteConfig.email}
+          </a>
         </div>
       </section>
     </>

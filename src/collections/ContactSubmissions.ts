@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { Resend } from 'resend'
 
 import { CONTACT_TOPICS } from '@/lib/contact-topics'
+import { assertHuman } from '@/lib/turnstile'
 
 const TOPIC_LABELS: Record<string, string> = Object.fromEntries(
   CONTACT_TOPICS.map(({ value, label }) => [value, label]),
@@ -23,12 +24,20 @@ export const ContactSubmissions: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'email', 'topic', 'createdAt'],
+    group: 'Inbox',
   },
   access: {
     // anyone can submit; only logged-in users can read/manage
     create: () => true,
   },
   hooks: {
+    // create is open to the public, so prove it's a person before anything is
+    // written — throwing here rejects the request without saving
+    beforeValidate: [
+      async ({ operation, req }) => {
+        if (operation === 'create') await assertHuman(req)
+      },
+    ],
     afterChange: [
       async ({ doc, operation, req }) => {
         if (operation !== 'create') return
