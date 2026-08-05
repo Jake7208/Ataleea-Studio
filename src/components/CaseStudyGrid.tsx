@@ -4,6 +4,7 @@ import React from 'react'
 import type { CaseStudy } from '@/payload-types'
 import Media from '@/components/Media'
 import { mediaInfo } from '@/lib/media'
+import { ArrowRight } from '@/components/icons'
 
 /** Only the fields the grid renders — lets pages query with `select`.
  * `tags` rides along for the work page's filter bar. */
@@ -31,6 +32,10 @@ export default function CaseStudyGrid({ posts }: { posts: CaseStudyGridPost[] })
                   mimeType={media.mime}
                   width={media.width}
                   height={media.height}
+                  // A card is a link, not a player. Ambient also keeps the
+                  // pointer passing through to the <a> wrapping it, so the
+                  // whole card stays clickable and the hover still fires.
+                  ambient
                 />
               ) : (
                 <div className="media-frame work-card-empty">
@@ -39,7 +44,12 @@ export default function CaseStudyGrid({ posts }: { posts: CaseStudyGridPost[] })
               )}
               <div className="work-card-meta">
                 {sub && <p className="work-card-info">{sub}</p>}
-                <h3 className="work-card-title">{post.title}</h3>
+                <h3 className="work-card-title">
+                  <span>{post.title}</span>
+                  <span className="work-card-arrow" aria-hidden="true">
+                    <ArrowRight />
+                  </span>
+                </h3>
               </div>
             </Link>
           </div>

@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Inter:wght@400;500&display=swap');
+/* Both faces are loaded by next/font in layout.tsx and served from this origin —
+   see the note there for why they are no longer @imported from Google. */
 
 /* ==========================================================================
    Ataleea Studio
@@ -64,8 +65,8 @@
   --danger: light-dark(#8c2f26, #e39289);
 
   /* Type */
-  --font-display: 'Inter Tight', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-text: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display: var(--font-inter-tight), 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-text: var(--font-inter), 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
   /* Metrics */
   --max-width: 1680px;
@@ -167,15 +168,15 @@ html[data-reveal-ready]:not([data-reveal-off]) [data-reveal].is-revealed {
 }
 
 /* siblings in a group come in one after another */
-.reveal-group > [data-reveal]:nth-child(2) {
+.reveal-group>[data-reveal]:nth-child(2) {
   transition-delay: 0.07s;
 }
 
-.reveal-group > [data-reveal]:nth-child(3) {
+.reveal-group>[data-reveal]:nth-child(3) {
   transition-delay: 0.14s;
 }
 
-.reveal-group > [data-reveal]:nth-child(4) {
+.reveal-group>[data-reveal]:nth-child(4) {
   transition-delay: 0.21s;
 }
 
@@ -310,6 +311,7 @@ strong {
   max-width: var(--max-width);
   margin-inline: auto;
   padding-inline: var(--gutter);
+  align-items: center;
 }
 
 /* Uncapped, so wide media keeps growing with the screen. */
@@ -325,6 +327,10 @@ strong {
 
 .section-alt {
   background-color: var(--paper-alt);
+}
+
+.section-bottom {
+  padding-bottom: var(--section-y);
 }
 
 .section-dark {
@@ -353,7 +359,7 @@ strong {
   margin-bottom: 0;
 }
 
-.section-head > div {
+.section-head>div {
   max-width: 34ch;
 }
 
@@ -398,6 +404,7 @@ strong {
 }
 
 @media (max-width: 768px) {
+
   .full-media,
   .full-media img,
   .full-media video,
@@ -756,7 +763,7 @@ strong {
 
 /* Rows arrive one after another on open. On close the delay is dropped, so
    they leave together and the menu gets out of the way quickly. */
-.mobile-nav > * {
+.mobile-nav>* {
   opacity: 0;
   transform: translateY(-8px);
   transition:
@@ -764,7 +771,7 @@ strong {
     transform var(--dur) var(--ease);
 }
 
-.mobile-nav.is-open > * {
+.mobile-nav.is-open>* {
   opacity: 1;
   transform: none;
   transition-delay: calc(var(--i, 0) * 0.05s);
@@ -1090,7 +1097,7 @@ strong {
   margin-bottom: 0;
 }
 
-.service-detail-body > p {
+.service-detail-body>p {
   max-width: 62ch;
 }
 
@@ -1372,13 +1379,11 @@ strong {
 
   /* an odd item would sit orphaned in a two-up grid — run it wide instead,
      which reads as deliberate rhythm rather than a gap */
-  .gallery-grid > .gallery-item:last-child:nth-child(odd) {
+  .gallery-grid>.gallery-item:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
 
-  .gallery-grid
-    > .gallery-item:last-child:nth-child(odd)
-    :is(.image-slot, img, video, .media-frame) {
+  .gallery-grid>.gallery-item:last-child:nth-child(odd) :is(.image-slot, img, video, .media-frame) {
     aspect-ratio: 21 / 9;
   }
 }
@@ -1390,21 +1395,37 @@ strong {
 .work-card {
   display: block;
   color: var(--ink);
+  text-decoration: none;
 }
 
-.work-card img,
-.work-card video,
 .work-card .media-frame {
   width: 100%;
   aspect-ratio: 3 / 2;
-  object-fit: cover;
   background-color: var(--paper-alt);
-  transition: opacity var(--dur) var(--ease);
+  overflow: hidden;
+  position: relative;
 }
 
-.work-card:hover img,
-.work-card:hover video {
-  opacity: 0.86;
+.work-card .media-frame img,
+.work-card .media-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease), opacity var(--dur) var(--ease);
+}
+
+.work-card:hover .media-frame img,
+.work-card:hover .media-frame video {
+  transform: scale(1.04);
+  opacity: 0.88;
+}
+
+.work-card .image-slot {
+  transition: border-color var(--dur) var(--ease);
+}
+
+.work-card:hover .image-slot {
+  border-color: var(--line-strong);
 }
 
 .work-card-empty {
@@ -1417,11 +1438,20 @@ strong {
   letter-spacing: 0.1em;
 }
 
+.work-card-empty span {
+  display: inline-block;
+  transition: transform var(--dur) var(--ease);
+}
+
+.work-card:hover .work-card-empty span {
+  transform: translateY(-4px);
+}
+
 .work-card-meta {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding-top: 1.15rem;
+  padding-top: 1.25rem;
 }
 
 .work-card-info,
@@ -1435,14 +1465,32 @@ strong {
 }
 
 .work-card-title {
-  font-size: 1.15rem;
-  letter-spacing: -0.012em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 1.75vw, 1.45rem);
+  font-weight: 500;
+  letter-spacing: -0.015em;
   margin: 0;
-  transition: opacity var(--dur) var(--ease);
+  color: var(--ink);
+  transition: color var(--dur) var(--ease);
 }
 
-.work-card:hover .work-card-title {
-  opacity: 0.6;
+.work-card-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-muted);
+  opacity: 0;
+  transform: translateX(-0.5rem);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.work-card:hover .work-card-arrow {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* --------------------------------------------------------------------------
@@ -1475,18 +1523,14 @@ strong {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(
-      to top right,
+    linear-gradient(to top right,
       transparent calc(50% - 0.5px),
       var(--line) 50%,
-      transparent calc(50% + 0.5px)
-    ),
-    linear-gradient(
-      to bottom right,
+      transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right,
       transparent calc(50% - 0.5px),
       var(--line) 50%,
-      transparent calc(50% + 0.5px)
-    );
+      transparent calc(50% + 0.5px));
 }
 
 .image-slot-label,
@@ -1516,18 +1560,14 @@ strong {
 
 .section-dark .image-slot::before {
   background-image:
-    linear-gradient(
-      to top right,
+    linear-gradient(to top right,
       transparent calc(50% - 0.5px),
       var(--line-dark) 50%,
-      transparent calc(50% + 0.5px)
-    ),
-    linear-gradient(
-      to bottom right,
+      transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right,
       transparent calc(50% - 0.5px),
       var(--line-dark) 50%,
-      transparent calc(50% + 0.5px)
-    );
+      transparent calc(50% + 0.5px));
 }
 
 .section-dark .image-slot-label {
@@ -1607,7 +1647,7 @@ strong {
 }
 
 /* compact like every other button on the site; goes full width once stacked */
-.contact-form > .btn {
+.contact-form>.btn {
   justify-self: start;
 }
 
@@ -1733,13 +1773,13 @@ strong {
 
 /* --on-dark, not --paper: the fill is forest in both schemes, but --paper
    inverts to near-black in dark mode and would put the label dark on dark. */
-.choice input:checked + span {
+.choice input:checked+span {
   background-color: var(--forest);
   border-color: var(--forest);
   color: var(--on-dark);
 }
 
-.choice input:focus-visible + span {
+.choice input:focus-visible+span {
   outline: 1px solid var(--ink);
   outline-offset: 3px;
 }
@@ -1902,6 +1942,7 @@ strong {
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: none;
@@ -2021,6 +2062,78 @@ strong {
   margin: clamp(2rem, 4vw, 3rem) 0 0;
 }
 
+.page-intro-lead {
+  max-width: 58ch;
+  margin-top: 1.25rem;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  color: var(--ink-muted);
+}
+
+/* ── Legal / policy prose ──────────────────────────────────────────────────
+   One narrow column. A privacy policy is read, not scanned, and the only thing
+   it needs from the design is a measure short enough to follow and headings
+   that are findable. */
+.legal {
+  max-width: 62ch;
+  padding-bottom: var(--section-y);
+}
+
+.legal h2 {
+  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0.75rem;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.legal h2:first-child {
+  margin-top: 0;
+}
+
+.legal h3 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.legal p {
+  margin: 0 0 1rem;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  color: var(--ink-muted);
+}
+
+.legal-list {
+  margin: 0 0 1rem;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+.legal-list li {
+  margin-bottom: 0.6rem;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  color: var(--ink-muted);
+}
+
+.legal strong {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.legal a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--line-strong);
+}
+
+.legal a:hover {
+  text-decoration-color: currentColor;
+}
+
 .post-hero {
   padding-block: clamp(3.5rem, 7vw, 6.5rem) clamp(2rem, 4vw, 3rem);
 }
@@ -2032,76 +2145,129 @@ strong {
 /* --------------------------------------------------------------------------
    Case study
 
-   One rail, about a third across, shared by the facts, the intro, the body and
-   the captions. The title is the only thing that starts at the page margin —
-   that break is what makes it read as a title.
+   Header: the title stands alone, with the facts as a row of labelled columns
+   beneath it and the hero below that.
 
-   Everything below leans on .cs-grid being applied identically wherever text
-   appears. Change the column ratio in one place and the whole article stays in
-   register; set widths per section and it drifts, which is exactly what the
-   old rule did (68ch centred in a 1680px container, under a hard-left header).
+   Body: every block is a .cs-row — label spanning the top, section title in the
+   left 5/12, content in the right 7/12. Applied identically everywhere, so a
+   run of sections has one content edge to read down. Tinted and dark bands
+   break the page into panels; consecutive blocks sharing a tone merge into one.
    -------------------------------------------------------------------------- */
 
 .case-study {
-  /* 5/12 title, 7/12 rail — close to the reference's one-third break, but in
-     twelfths so it lands on the same rhythm as the rest of the site */
-  --cs-cols: minmax(0, 5fr) minmax(0, 7fr);
   --cs-gap: clamp(1.5rem, 4vw, 4rem);
-  /* comfortable measure inside the rail, so a wide screen doesn't run the body
-     copy out to 100+ characters a line */
+  /* comfortable measure, so a wide screen doesn't run the body copy out to
+     100+ characters a line */
   --cs-measure: 62ch;
 }
 
-.cs-grid {
+/* ── The row ───────────────────────────────────────────────────────────────
+   The page's structural unit: title left, content right, on the same 5/7 split
+   as the header. Every block takes it, titled or not, so a run of sections has
+   one content edge to read down rather than each block centring itself.
+   Measured off the reference, which runs a 12-column grid and puts section
+   titles in the left 5 and everything else in the right 7. */
+
+/* row-gap:0 with the label spanning both tracks is what makes the heading and
+   the copy start on the same line. With the label inside the title column it
+   pushed the heading down by its own height, so the two columns never lined up
+   at the top — the thing the eye actually reads as "aligned". */
+.cs-row {
   display: grid;
-  grid-template-columns: var(--cs-cols);
-  gap: var(--cs-gap);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  column-gap: var(--cs-gap);
+  row-gap: 0;
+  align-items: start;
 }
 
-/* Everything that belongs on the rail sits in column 2. */
-.cs-rail,
-.cs-head-meta,
-.cs-statement {
-  grid-column: 2;
+/* Hairline dividers between body sections, skipped for the first section of a run/band */
+.cs-body>*+.container>.cs-row,
+.cs-body>.cs-band>*+.container>.cs-row {
+  border-top: 1px solid var(--line);
+  padding-top: clamp(2rem, 4vw, 3.5rem);
 }
 
-.cs-rail,
+.cs-row>.cs-label {
+  grid-column: 1 / -1;
+  margin-bottom: clamp(0.75rem, 1.5vw, 1.1rem);
+}
+
+/* The column itself is uncapped — the reading measure belongs on the prose, not
+   on the track. Capping the track shrank every image, swatch grid and specimen
+   to the width of a paragraph, which is what made them read as thumbnails. */
+.cs-row-body {
+  min-width: 0;
+}
+
+.cs-row-media {
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.cs-row-media img,
+.cs-row-media video {
+  width: 100%;
+  height: auto;
+}
+
 .cs-intro {
   max-width: var(--cs-measure);
 }
 
+/* The title stands alone with the facts in a row beneath it, rather than the
+   old two-column rail. Five stacked pairs in a narrow right-hand column read as
+   a form; the same facts as a row of columns read as a colophon, which is what
+   they are. */
 .cs-head {
   padding-block: clamp(3.5rem, 7vw, 6.5rem) clamp(2.5rem, 5vw, 4rem);
-  align-items: start;
 }
 
 .cs-head h1 {
-  margin: 0;
-  max-width: 14ch;
+  margin: 0 0 1.5rem;
+  max-width: 18ch;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6.5vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  color: var(--ink);
 }
 
 .cs-head .eyebrow {
   margin-bottom: 1rem;
 }
 
-/* Stacked label/value pairs. The previous horizontal row put five facts on one
-   line and wrapped them mid-pair on anything narrow. */
-.cs-facts {
-  margin: 0;
-  display: grid;
-  gap: 1.1rem;
+/* Sits under the title, in the column the title already owns. A text link
+   rather than a solid button — the case study's own job is to sell the work,
+   and a filled button here competes with Start a project in the header. */
+.cs-visit {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
 }
 
+/* One column per group. auto-fit with a 13rem floor rather than a fixed count,
+   so a study with only two facts gets two columns instead of two columns and a
+   pair of gaps, and everything folds to a readable width on a phone. */
+.cs-facts {
+  margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+/* The rule is what makes a column read as a column. */
 .cs-fact dt {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink-faint);
 }
 
 .cs-fact dd {
-  margin: 0.15rem 0 0;
+  margin: 0.9rem 0 0;
   font-size: 0.9375rem;
+  line-height: 1.6;
   color: var(--ink);
 }
 
@@ -2121,15 +2287,44 @@ strong {
   margin-bottom: clamp(3rem, 6vw, 5.5rem);
 }
 
+/* The image sets its own height. A fixed viewport height here made a handsome
+   band, but it cropped 15% off every landscape shot to get it — and the point
+   of the hero is the photograph, not the band. */
+.cs-hero img,
+.cs-hero video {
+  width: 100%;
+  height: auto;
+}
+
+/* More air than before, and it matters most on a phone: at the old 2.5rem floor
+   the blocks ran together into one scroll with nothing marking where a section
+   ended. */
 .cs-body {
+  /* Named, because three rules below cancel it with a negative margin and a
+     second copy of the value would drift the moment this one is touched.
+     Deliberately NOT --cs-gap: that name is already taken by .case-study for
+     the column gutter inside .cs-row, and declaring it here shadowed it for
+     every descendant — which quietly widened the gutter in every section. */
+  --cs-band-gap: clamp(3.5rem, 6vw, 5.5rem);
   padding-bottom: var(--section-y);
   display: flex;
   flex-direction: column;
-  gap: clamp(2.5rem, 5vw, 4.5rem);
+  gap: var(--cs-band-gap);
 }
 
-.cs-text-row p {
+/* Two coloured panels in a row meet rather than showing a strip of page between
+   them. The gap is what separates a section from the next one on the page
+   colour; between two bands it reads as a seam, or worse as a mistake, because
+   nothing in the design puts a band of cream between a tinted panel and a dark
+   one. Cancelled here, so the spacing comes from each band's own padding —
+   which is already generous enough that the two together need no help. */
+.cs-body> :is(.cs-band, .cs-device, .cs-media--framed)+ :is(.cs-band, .cs-device, .cs-media--framed) {
+  margin-top: calc(-1 * var(--cs-band-gap));
+}
+
+.cs-body-text {
   margin: 0;
+  max-width: var(--cs-measure);
   font-size: 1.0625rem;
   line-height: 1.72;
   color: var(--ink-muted);
@@ -2137,129 +2332,383 @@ strong {
 
 /* The big type moment. Ink rather than muted — it is the one line in the
    article that is making an argument rather than describing something. */
+.cs-statement-wrapper {
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
 .cs-statement {
-  margin: clamp(1.5rem, 3vw, 3rem) 0;
-  max-width: 22ch;
+  margin: 0;
+  max-width: 28ch;
   font-family: var(--font-display);
-  font-size: clamp(1.75rem, 3.4vw, 3rem);
-  line-height: 1.12;
-  letter-spacing: -0.022em;
+  font-size: clamp(1.75rem, 4.2vw, 3.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ── Bands ─────────────────────────────────────────────────────────────────
+   The break device. A study without these is one unbroken column of cream and
+   every section looks like the one above it — which is the whole complaint the
+   reference answers. Full width, so they read as panels the page background
+   shows between rather than as boxes. */
+
+.cs-band {
+  padding-block: clamp(3rem, 7vw, 6rem);
+}
+
+/* Blocks sharing a band need their own separation — .cs-body's gap only
+   separates one run from the next, not the blocks inside one. */
+.cs-band>*+* {
+  margin-top: clamp(2rem, 4vw, 3.5rem);
+}
+
+.cs-band--tinted {
+  background-color: var(--project-accent, var(--paper-alt));
+}
+
+.cs-visit:hover {
+  color: var(--project-accent, var(--ink));
+}
+
+.cs-band--dark {
+  background-color: var(--forest);
+  color: var(--on-dark);
+}
+
+.cs-band--dark .cs-section-heading,
+.cs-band--dark .cs-statement {
+  color: var(--on-dark);
+}
+
+.cs-band--dark .cs-body-text,
+.cs-band--dark .eyebrow {
+  color: var(--on-dark-muted);
+}
+
+/* The band already supplies the air; the statement's own margin would double it. */
+.cs-band .cs-statement {
+  margin-block: 0;
+}
+
+/* ── Type scale ────────────────────────────────────────────────────────────
+   Measured off the reference and matched in proportion rather than in pixels:
+   13px uppercase label → 40px title → 24px lead → 16px body, everything at
+   weight 500, with tracking tightening as the size grows (−1% at body, −4% at
+   display). That last part is the most visible characteristic of the reference
+   and the cheapest to get wrong. */
+
+/* Lighter and less tracked than before. The reference sets its display face at
+   weight 200 with letter-spacing:normal, which is what makes it read as airy
+   and editorial rather than tight and technical; −4% tracking on a 500 weight
+   was pulling in the opposite direction. */
+.cs-section-heading {
+  margin: 0;
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: -0.018em;
+}
+
+/* A titled section's copy is the lead — one step up from a continuation
+   paragraph, which is how the reference separates the two. Set from the
+   component, since "has a title" is not something CSS can ask. */
+.cs-body-text--lead {
+  font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+  line-height: 1.3;
+  letter-spacing: -0.03em;
   color: var(--ink);
 }
 
-/* Section headings. These are what turn a long study into something skimmable —
-   a client reads the headings and stops at the one they care about. */
-.cs-section-heading {
-  margin: 0;
-  font-size: clamp(1.25rem, 1.9vw, 1.6rem);
-  letter-spacing: -0.014em;
+/* ── Section label ─────────────────────────────────────────────────────────
+   One quiet word. Sentence case, no rule, no numeral, no tracking, no caps —
+   every one of those turns the label into a separate object sitting above the
+   heading, and the whole point is that it reads as the same piece of text.
+   Measured off the reference, which sets these as a plain small grey word. */
+
+.cs-label {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-text);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-faint);
 }
 
-.cs-section-row .eyebrow {
-  margin-bottom: 0.75rem;
+.cs-band--dark .cs-label {
+  color: var(--on-dark-faint);
 }
 
-.cs-section-body {
-  margin: 1rem 0 0;
-  font-size: 1.0625rem;
-  line-height: 1.72;
-  color: var(--ink-muted);
+/* Only when copy follows a heading. A bare paragraph takes its spacing from
+   .cs-body's gap instead, which is what lets one block serve both. */
+.cs-section-heading+.cs-body-text {
+  margin-top: 1rem;
 }
 
 /* ── Colour system ─────────────────────────────────────────────────────────
-   Swatches on the rail, alongside the article's text rather than breaking out
-   of it. The chip is big enough to judge the colour; the usage line under it is
+   Centred with the article's text rather than breaking out of it, but on the
+   wider column — a swatch grid held to a reading measure only fits two chips a
+   row. The chip is big enough to judge the colour; the usage line under it is
    the part that carries the argument.
 
    auto-fill, not auto-fit: with six colours in four tracks, auto-fit would
    collapse the empty tracks and stretch the last two chips to double width.
    auto-fill keeps the tracks, so the final row lines up with the one above. */
 
-.cs-palette {
-  grid-column: 2;
+.cs-section-header {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: clamp(0.75rem, 1.5vw, 1.25rem);
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.cs-section-header .cs-label {
   margin: 0;
+}
+
+.cs-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  margin: 0;
+  color: var(--ink);
+}
+
+.cs-band--dark .cs-section-title {
+  color: var(--on-dark);
+}
+
+.cs-palette-section {
+  width: 100%;
+}
+
+.cs-palette {
+  margin-block: 0;
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--cs-chip, 11rem), 1fr));
-  gap: clamp(1.5rem, 3vw, 2.25rem) clamp(1rem, 1.8vw, 1.5rem);
+  grid-template-columns: repeat(auto-fill, minmax(var(--cs-chip, 14rem), 1fr));
+  gap: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem);
 }
 
 .cs-swatch {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
   min-width: 0;
 }
 
 .cs-swatch-chip {
   display: block;
-  height: clamp(5.5rem, 9vw, 8rem);
-  margin-bottom: 0.7rem;
-  /* the hairline is what makes a white or near-white swatch read as a block
-     rather than as a hole in the page */
+  height: clamp(6.5rem, 12vw, 10rem);
+  margin-bottom: 0.85rem;
   border: 1px solid var(--line);
+  transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.cs-swatch:hover .cs-swatch-chip {
+  transform: translateY(-4px);
+  border-color: var(--line-strong);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
 }
 
 .cs-swatch-name {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 1.0625rem;
+  font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
 
 .cs-swatch-hex {
-  font-size: 0.75rem;
-  letter-spacing: 0.07em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
   font-variant-numeric: tabular-nums;
   color: var(--ink-faint);
 }
 
 .cs-swatch-usage {
-  margin-top: 0.35rem;
-  font-size: 0.8125rem;
-  line-height: 1.55;
+  margin-top: 0.45rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
   color: var(--ink-muted);
 }
 
-/* ── Typography ────────────────────────────────────────────────────────────
-   Specimen first, name underneath — you judge a face by looking at it, not by
-   reading its name. */
+.cs-type-section {
+  width: 100%;
+}
 
-.cs-type {
-  grid-column: 2;
+.cs-faces {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3rem, 6vw, 5rem);
+}
+
+.cs-face {
   margin: 0;
+  min-width: 0;
   display: grid;
-  gap: clamp(1.75rem, 3.5vw, 3rem);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
 }
 
-.cs-type-face {
-  padding-bottom: clamp(1.25rem, 2.5vw, 2rem);
-  border-bottom: 1px solid var(--line);
+.cs-face+.cs-face {
+  border-top: 1px solid var(--line);
+  padding-top: clamp(2.5rem, 5vw, 4rem);
 }
 
-.cs-type-sample {
-  margin: 0 0 0.85rem;
-  font-size: clamp(2rem, 5vw, 3.75rem);
-  line-height: 1.06;
-  letter-spacing: -0.02em;
+.cs-face-aa-col {
+  min-width: 0;
+}
+
+.cs-face-details-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cs-face-aa {
+  margin: 0;
+  font-size: clamp(5rem, 14vw, 10rem);
+  line-height: 0.75;
+  letter-spacing: -0.04em;
   color: var(--ink);
+  font-weight: 500;
 }
 
-.cs-type-face dt {
+.cs-face-set {
+  margin: 0;
+  font-size: clamp(1.125rem, 2.5vw, 1.875rem);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  word-break: break-all;
+}
+
+.cs-face-numerals {
+  color: var(--ink-faint);
+  font-variant-numeric: lining-nums;
+}
+
+.cs-face-foot {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 1.5rem;
-  font-size: 0.8125rem;
+  gap: 0.35rem 2rem;
+  margin-top: 1rem;
+  font-family: var(--font-text);
+  font-size: 0.875rem;
+  color: var(--ink);
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
 }
 
-.cs-type-family {
+.cs-face-family-name {
+  font-weight: 500;
+}
+
+.cs-face-notes {
+  color: var(--ink-faint);
+}
+
+.cs-band--dark .cs-face-aa,
+.cs-band--dark .cs-face-set,
+.cs-band--dark .cs-face-foot {
+  color: var(--on-dark);
+}
+
+.cs-band--dark .cs-face-numerals,
+.cs-band--dark .cs-face-notes {
+  color: var(--on-dark-faint);
+}
+
+/* ── Testimonial ─────────────────────────────────────────────────────────── */
+
+.cs-testimonial-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-block: clamp(2rem, 5vw, 5rem);
+  width: 100%;
+}
+
+.testimonial--large {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  width: 100%;
+}
+
+.testimonial--large .testimonial-quote {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  max-width: 30ch;
+  margin-inline: auto;
+  margin-bottom: clamp(1.5rem, 3.5vw, 2.5rem);
+  text-wrap: pretty;
+}
+
+.cs-band--dark .testimonial--large .testimonial-quote {
+  color: var(--on-dark);
+}
+
+.testimonial--large .testimonial-who {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.testimonial--large .testimonial-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.testimonial--large .testimonial-credit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.testimonial--large .testimonial-name {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 500;
   color: var(--ink);
 }
 
-.cs-type-role,
-.cs-type-notes {
-  color: var(--ink-faint);
+.testimonial--large .testimonial-role {
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+
+.cs-band--dark .testimonial--large .testimonial-name {
+  color: var(--on-dark);
+}
+
+.cs-band--dark .testimonial--large .testimonial-role {
+  color: var(--on-dark-faint);
 }
 
 /* ── Gallery labels ───────────────────────────────────────────────────────── */
@@ -2270,6 +2719,10 @@ strong {
   min-width: 0;
 }
 
+.cs-shot img {
+  border: 1px solid var(--line-strong);
+}
+
 .cs-shot-label {
   margin-top: 0.6rem;
   font-size: 0.6875rem;
@@ -2278,8 +2731,8 @@ strong {
   color: var(--ink-faint);
 }
 
-/* Captions ride the rail, so they line up with the body rather than with the
-   edge of whatever image they follow. */
+/* Captions share the body column, so they line up with the copy rather than
+   with the edge of whatever image they follow. */
 .cs-media figcaption,
 .cs-gallery figcaption {
   margin-top: 1rem;
@@ -2291,8 +2744,47 @@ strong {
   margin: 0;
 }
 
+/* Full-bleed media touches whatever sits either side of it, above and below.
+   It already runs to both screen edges, so a strip of page colour around it
+   reads as the image having been inset by mistake rather than as spacing.
+   `wide` and `framed` are unaffected — they keep the page's normal rhythm.
+
+   This used to carry an exception restoring the gap after a gallery or another
+   media block, on the grounds that two pieces of media should not touch. The
+   full-bleed treatment is a deliberate break now, so the exception is gone. */
+.cs-body>*+.cs-media--full,
+.cs-body>.cs-media--full+* {
+  margin-top: calc(-1 * var(--cs-band-gap));
+}
+
+/* ...with the image row as the exception, on both sides. A row of phone shots
+   is a set of small objects standing on the page, not a surface that fills it —
+   butted against a full-bleed photograph it reads as clutter at the edge of the
+   image rather than as its own section. Same specificity as the rule above, so
+   this has to stay below it to win. */
+.cs-body>.cs-gallery+*,
+.cs-body>*+.cs-gallery {
+  margin-top: 0;
+}
+
 .cs-media--full .cs-media-inner img,
 .cs-media--full .cs-media-inner video {
+  width: 100%;
+  height: auto;
+}
+
+/* The working width: the same edges as the title, the copy and the swatches, so
+   the page reads as one column with full bleed as the single break. An
+   intermediate width sat 130px inside the full-bleed edge and aligned with
+   nothing, which reads as a misalignment rather than as rhythm. */
+.cs-media--wide .cs-media-inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.cs-media--wide .cs-media-inner img,
+.cs-media--wide .cs-media-inner video {
   width: 100%;
   height: auto;
 }
@@ -2301,20 +2793,177 @@ strong {
    reading as a picture of a website and starts reading as the website. */
 .cs-media--framed .cs-media-inner {
   background-color: var(--paper-alt);
-  padding: clamp(1.5rem, 5vw, 5rem) clamp(1rem, 5vw, 5rem);
+  padding: clamp(1.5rem, 5vw, 5rem) var(--gutter);
+}
+
+/* The caption is inside the panel here, so it lines up with the image above it
+   rather than indenting again on the container's own gutter. */
+.cs-media--framed .cs-media-inner>figcaption>.container {
+  padding-inline: 0;
+  max-width: calc(var(--max-width) - 2 * var(--gutter));
 }
 
 .cs-media--framed .cs-media-inner img,
 .cs-media--framed .cs-media-inner video {
   width: 100%;
-  max-width: 1200px;
+  max-width: calc(var(--max-width) - 2 * var(--gutter));
   margin-inline: auto;
   height: auto;
   border: 1px solid var(--line);
 }
 
-.cs-gallery {
+/* --- Device mockup -------------------------------------------------------- */
+
+/* An optional band behind the device, so it sits on a surface rather than
+   floating. Full bleed by default even in the wide variant — the panel is the
+   background, and a background that stops at the text margin reads as a stripe. */
+.cs-device {
   margin: 0;
+}
+
+/* Always a band, not only when a colour is picked. A laptop floating on the page
+   colour reads as an image that was dropped in; the same laptop on a surface
+   reads as a section of the site. --paper-alt is the quietest way to say that,
+   and the block's own colour overrides it when a project wants a louder one. */
+.cs-device-inner {
+  background-color: var(--device-panel, var(--paper-alt));
+  padding-block: clamp(3rem, 8vw, 8rem);
+}
+
+/* How big a mockup sits on the page. Height follows from it — the frame's ratio
+   is fixed by the artwork — so width is the only knob, set per block from the
+   Size field rather than edited here. */
+.cs-device {
+  --device-width: 84rem;
+}
+
+.cs-device[data-size='small'] {
+  --device-width: 54rem;
+}
+
+.cs-device[data-size='medium'] {
+  --device-width: 68rem;
+}
+
+.cs-device[data-size='large'] {
+  --device-width: 84rem;
+}
+
+/* Deliberately larger than any column it can sit in — the min() below hands the
+   width back to the container, so this means "as wide as the page allows". */
+.cs-device[data-size='full'] {
+  --device-width: 200rem;
+}
+
+.cs-device--wide .device-mockup {
+  max-width: min(calc(var(--max-width) - 2 * var(--gutter)), var(--device-width));
+  margin-inline: auto;
+}
+
+.cs-device--wide .cs-device-inner {
+  padding-inline: var(--gutter);
+}
+
+/* The frame image sets the box. Its aspect ratio comes from the PNG's own
+   dimensions (see lib/devices.ts), so the screen percentages below resolve
+   against exactly the geometry they were measured from. */
+.device-mockup {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--device-frame);
+}
+
+/* Centred rather than inset, because Apple draws the display dead centre in
+   every frame. A device whose screen sits off-centre would need a top/left pair
+   here instead — the measurement script reports them if one ever does. */
+.device-mockup-screen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--device-screen-width);
+  aspect-ratio: var(--device-screen);
+  overflow: hidden;
+  /* Artwork almost never matches the display's 3:2 exactly, so some of the
+     screen is usually left over. Painting it the artwork's own background
+     colour is what makes that read as the page continuing — which is what a
+     real laptop showing a short page looks like — rather than as a gap. The
+     dark default is only what an unset one falls back to. */
+  background-color: var(--device-screen-bg, #0a1413);
+}
+
+.device-mockup-screen .media-frame {
+  width: 100%;
+  height: 100%;
+}
+
+/* The default is to match the width and keep the artwork's own proportions.
+   A screenshot of a website is taller than any display it is shown on, so it
+   fills the width, starts at the top, and the bezel clips the rest — which is
+   what a site on a laptop actually looks like. Nothing is ever stretched, and
+   nothing is lost off the sides. */
+.device-mockup-screen img,
+.device-mockup-screen video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* For artwork exported at the display's own ratio — fills the screen exactly,
+   and trims the centre if it is slightly off. */
+.device-mockup[data-fit='cover'] .device-mockup-screen img,
+.device-mockup[data-fit='cover'] .device-mockup-screen video {
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Everything visible, letterboxed against the screen colour. The honest option
+   when the artwork has to be seen whole and is the wrong shape for the display. */
+.device-mockup[data-fit='contain'] .device-mockup-screen img,
+.device-mockup[data-fit='contain'] .device-mockup-screen video {
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Painted over the content, which is the whole technique: the bezel masks the
+   artwork's square corners and the notch covers the strip it sits in, so there
+   is no clip-path or mask to keep in step with the art. pointer-events:none for
+   the same reason the clips have it — nothing here is a control, and the frame
+   spans the full width of the block. */
+.device-mockup-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* --- Ambient video -------------------------------------------------------- */
+
+/* pointer-events:none is load-bearing, not tidiness. A <video> with controls
+   is an interactive target sitting in the middle of the scroll surface: on
+   touch it claims the gesture for its own scrubber, and a cursor resting on it
+   puts Lenis and the element in disagreement about who owns the input. There is
+   nothing here to click — the clip is scenery — so it declines the pointer
+   entirely and every event passes through to the page underneath. */
+.ambient-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+
+/* On .container, not .container-wide — a row of images running wider than the
+   copy above it was the other edge that failed to line up. */
+.cs-gallery {
+  margin: 0 auto;
+}
+
+
+/* The caption is already inside the container, so it must not indent again. */
+.cs-gallery>figcaption>.container {
+  padding-inline: 0;
 }
 
 .cs-gallery-row {
@@ -2339,38 +2988,341 @@ strong {
   object-fit: cover;
 }
 
+.cs-gallery-row[data-count='3'] .cs-shot {
+  width: 68%;
+  margin-inline: auto;
+}
+
+.cs-gallery-row[data-count='2'] .cs-shot {
+  width: 55%;
+  margin-inline: auto;
+}
+
+.cs-gallery-row[data-count='2'] img,
+.cs-gallery-row[data-count='2'] video,
+.cs-gallery-row[data-count='3'] img,
+.cs-gallery-row[data-count='3'] video {
+  aspect-ratio: 1080 / 2021;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Device shots and mockups keep their own proportions. Cropping a phone screen
+   to 4:5 cuts off the top and bottom of the exact thing being shown, and three
+   phones cropped to a photo's shape stop reading as phones at all. Bottom
+   alignment so a row of mixed heights sits on one line rather than floating. */
+.cs-gallery-row[data-fit='natural'] {
+  align-items: end;
+}
+
+/* The hairline is doing real work here, not decoration. A phone screenshot is
+   mostly light UI on a light ground, so on cream it has no edge of its own —
+   the shot ends and the page begins with nothing marking where. Same border the
+   framed media block uses, so the two agree, and --line carries its own
+   light-dark pair so it holds in both schemes. */
+.cs-gallery-row[data-fit='natural'] img,
+.cs-gallery-row[data-fit='natural'] video {
+  height: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+}
+
+/* Portrait shots don't need the full track width — three phones stretched edge
+   to edge read as billboards. Held to a phone-ish width and centred in it. */
+/* The border sits on the cell, not the image — so it encloses the shot and its
+   label together as one object, rather than drawing a box round the artwork and
+   leaving the caption outside it.
+
+   --line-strong rather than --line: the 14% hairline is calibrated to divide two
+   areas of page colour, and this has to separate a light screenshot from a light
+   ground, which is a bigger job. */
+.cs-gallery-row[data-fit='natural'] .cs-shot {
+  align-items: center;
+  padding: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.cs-gallery-row[data-fit='natural'] .media-frame {
+  width: 100%;
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+/* A specimen is artwork, not a photograph, and it was running the full content
+   column — around 1300px. Letterforms blown up that far read as thin and sparse
+   whatever the export, which is why an SVG still looked wrong: the problem was
+   the size, not the format. Held to a width someone would plausibly set type at. */
+.cs-face-sheet {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  max-width: 46rem;
+}
+
+/* Two sit side by side and align on their baseline rather than their tops, so
+   a tall display face and a shorter text face read as one row. */
+.cs-face-sheet[data-count='2'] {
+  max-width: 64rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+}
+
+.cs-face-sheet figure {
+  margin: 0;
+  min-width: 0;
+}
+
+/* Same reasoning as the device shots: a specimen is black letterforms exported
+   on white, so on cream it has no edge and reads as type floating loose on the
+   page rather than as a plate showing it. */
+.cs-face-sheet img,
+.cs-face-sheet video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line-strong);
+}
+
+.cs-face-sheet figcaption {
+  margin-top: 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 700px) {
+  .cs-face-sheet[data-count='2'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
-  /* One column. The rail collapses to the gutter, so the title and the body
-     share a left edge instead of the body sitting in a phantom second column. */
-  .case-study {
-    --cs-cols: minmax(0, 1fr);
+
+  /* The row stacks: title above its content rather than beside it. The gap
+     closes right up, because a heading sitting a full column-gap away from the
+     copy it introduces reads as two blocks instead of one. :not(:empty) so an
+     untitled section's placeholder column adds no space of its own. */
+  .cs-row {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .cs-rail,
-  .cs-head-meta,
-  .cs-statement,
-  .cs-type,
-  .cs-palette {
-    grid-column: 1;
+  .cs-row-title:not(:empty) {
+    margin-bottom: clamp(0.9rem, 3vw, 1.5rem);
   }
+
+  .cs-row-body {
+    max-width: none;
+  }
+
 
   .cs-head h1 {
     max-width: 18ch;
   }
 
-  .cs-gallery-row,
   .cs-gallery-row[data-count='3'],
+  .cs-gallery-row[data-count='2'] {
+    --cs-shots: 1;
+    row-gap: 2.5rem;
+  }
+
+  .cs-gallery-row[data-count='3'] .cs-shot,
+  .cs-gallery-row[data-count='2'] .cs-shot {
+    width: 80%;
+    margin-inline: auto;
+  }
+
   .cs-gallery-row[data-count='4'] {
     --cs-shots: 2;
+  }
+
+  .cs-gallery-row[data-count='4'] .cs-shot {
+    width: 100%;
   }
 }
 
 @media (max-width: 560px) {
+
   /* At 390px the content column is ~350px, and two 11rem tracks need 352 — it
      misses by two pixels and drops to a single column, which turns six colours
      into six full-width blocks. A smaller floor keeps the pair. */
   .cs-palette {
     --cs-chip: 8rem;
+  }
+}
+
+/* ── Next project ──────────────────────────────────────────────────────────
+   Closes a study. One oversized card rather than a row of equal thumbnails —
+   at the bottom of a long read the point is to offer somewhere to go, and a
+   grid of three makes that a decision instead of an invitation. */
+
+.next-project {
+  /* No top border and no page padding above: the panel is a full-bleed block of
+     colour, and a hairline plus a gap would fence it off from the study it is
+     closing rather than ending it. */
+  margin-top: var(--section-y);
+}
+
+/* Media and body occupy the same grid cell, so the title sits over the
+   photograph instead of under it. The whole panel is one link. */
+.next-lead {
+  position: relative;
+  display: grid;
+  min-height: min(56vh, 30rem);
+  overflow: hidden;
+  color: var(--on-dark);
+  /* Shows through wherever the image does not reach, and is the whole
+     background when a study has no hero image yet. */
+  background-color: var(--forest-deep);
+}
+
+.next-lead > * {
+  grid-area: 1 / 1;
+}
+
+/* Absolute rather than a grid layer. Stacked in the grid it still contributed
+   its natural height to the row — `height: 100%` against a content-sized cell
+   resolves to auto — so the panel grew to the full height of the photograph,
+   which is the exact problem this redesign exists to fix. Taken out of flow, the
+   body and the min-height above are the only things that size it. */
+.next-lead-media {
+  position: absolute;
+  inset: 0;
+}
+
+.next-lead-media .media-frame {
+  width: 100%;
+  height: 100%;
+}
+
+.next-lead-media img,
+.next-lead-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s var(--ease);
+}
+
+/* The scrim is what makes the title legible over an unknown photograph. Heavier
+   at the bottom, where the type sits, and never fully clear at the top so a
+   bright sky cannot swallow the eyebrow. */
+.next-lead::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 33, 32, 0.88) 0%,
+    rgba(10, 33, 32, 0.55) 42%,
+    rgba(10, 33, 32, 0.28) 100%
+  );
+}
+
+.next-lead-body {
+  position: relative;
+  /* above the scrim */
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.next-eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--on-dark-faint);
+}
+
+.next-lead-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5em 0.75em;
+  margin: 0;
+  font-size: clamp(2rem, 5.5vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--on-dark);
+}
+
+.next-lead-arrow {
+  display: inline-flex;
+  transition: transform 0.4s var(--ease);
+}
+
+.next-lead-arrow svg {
+  width: clamp(1.75rem, 3vw, 2.5rem);
+  height: auto;
+}
+
+.next-lead:hover .next-lead-arrow {
+  transform: translateX(0.4rem);
+}
+
+.next-lead:hover .next-lead-media img,
+.next-lead:hover .next-lead-media video {
+  transform: scale(1.04);
+}
+
+.next-lead:focus-visible {
+  outline: 2px solid var(--on-dark);
+  outline-offset: -6px;
+}
+
+.next-lead-info {
+  margin: 1rem 0 0;
+  font-size: 0.875rem;
+  color: var(--on-dark-muted);
+}
+
+/* Sits above the panel on the page's own colour — a quiet second option for a
+   reader who wants to choose rather than be led. Outside the panel because an
+   anchor cannot contain another anchor, and above it because the panel is the
+   ending and nothing should trail after it. */
+.next-head {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: clamp(1rem, 2vw, 1.5rem);
+}
+
+.next-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+
+.next-all svg {
+  transition: transform 0.3s var(--ease);
+}
+
+.next-all:hover {
+  color: var(--ink);
+}
+
+.next-all:hover svg {
+  transform: translateX(0.25rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .next-lead-media img,
+  .next-lead-media video {
+    transition: none;
+  }
+
+  .next-lead:hover .next-lead-media img,
+  .next-lead:hover .next-lead-media video {
+    transform: none;
+  }
+
+  .next-lead-arrow,
+  .next-all svg {
+    transition: none;
+  }
+
+  .next-lead:hover .next-lead-arrow,
+  .next-all:hover svg {
+    transform: none;
   }
 }
 
@@ -2386,7 +3338,7 @@ strong {
   color: var(--ink-muted);
 }
 
-.post-byline > * {
+.post-byline>* {
   margin: 0;
 }
 
@@ -2735,7 +3687,7 @@ strong {
    never back down from the top. */
 /* each slide fills the cell so its attribution can sit on the floor of the
    block rather than trailing whatever length the quote happens to be */
-.testimonial-viewport > .testimonial {
+.testimonial-viewport>.testimonial {
   grid-area: 1 / 1;
   margin: 0;
   display: flex;
@@ -2762,7 +3714,7 @@ strong {
 }
 
 /* the incoming quote holds still until the outgoing one has cleared */
-.testimonial-viewport > .testimonial.is-current {
+.testimonial-viewport>.testimonial.is-current {
   opacity: 1;
   visibility: visible;
   transform: none;
@@ -2772,7 +3724,7 @@ strong {
     visibility 0s linear var(--dur);
 }
 
-.testimonial-viewport > .testimonial.is-leaving {
+.testimonial-viewport>.testimonial.is-leaving {
   animation: testimonial-out var(--dur) var(--ease);
 }
 
@@ -2782,6 +3734,7 @@ strong {
     visibility: visible;
     transform: none;
   }
+
   to {
     opacity: 0;
     visibility: visible;
@@ -3155,6 +4108,7 @@ html.is-scroll-locked body {
    -------------------------------------------------------------------------- */
 
 @media (max-width: 1024px) {
+
   .hero-body,
   .statement,
   .statement-layout,
@@ -3300,7 +4254,7 @@ html.is-scroll-locked body {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .contact-form > .btn {
+  .contact-form>.btn {
     justify-self: stretch;
   }
 
@@ -3360,6 +4314,7 @@ html.is-scroll-locked body {
    swaps side. Doing that here rather than from React state means it is already
    correct in the first frame. */
 @media (prefers-color-scheme: dark) {
+
   :root:not([data-theme='light']) img,
   :root:not([data-theme='light']) video {
     opacity: 0.94;
@@ -3408,7 +4363,8 @@ html.is-scroll-locked body {
   /* tucks under .site-header rather than fighting it — that one is also sticky
      at top: 0, so both pinned at 0 would just overlap */
   top: var(--header-h);
-  z-index: 90; /* under the header (100), over everything it scrolls past */
+  z-index: 90;
+  /* under the header (100), over everything it scrolls past */
   display: flex;
   flex-wrap: wrap;
   align-items: center;

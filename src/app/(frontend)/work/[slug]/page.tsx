@@ -2,13 +2,11 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import React, { cache } from 'react'
 
 import config from '@/payload.config'
 import ArticleBody from '@/components/ArticleBody'
-import CaseStudyGrid from '@/components/CaseStudyGrid'
-import CommentsSection from '@/components/CommentsSection'
+import NextProject from '@/components/NextProject'
 import PreviewBanner from '@/components/PreviewBanner'
 
 // statically rendered per slug, refreshed in the background at most once a minute
@@ -55,6 +53,8 @@ export default async function CaseStudyPage({ params }: Props) {
   if (!post) notFound()
 
   const payload = await getPayload({ config: await config })
+  // Two: the one that reads as "next", and one more so the section is a choice
+  // rather than a single dead end.
   const { docs: more } = await payload.find({
     collection: 'case-studies',
     where: { slug: { not_equals: slug }, _status: { not_equals: 'draft' } },
@@ -70,17 +70,7 @@ export default async function CaseStudyPage({ params }: Props) {
 
       <ArticleBody post={post} />
 
-      <CommentsSection postId={post.id} postType="case-studies" />
-
-      {more.length > 0 && (
-        <section className="section container">
-          <div className="section-head">
-            <h2>More work</h2>
-            <Link href="/work">All work</Link>
-          </div>
-          <CaseStudyGrid posts={more} />
-        </section>
-      )}
+      {more.length > 0 && <NextProject next={more[0]} />}
     </>
   )
 }

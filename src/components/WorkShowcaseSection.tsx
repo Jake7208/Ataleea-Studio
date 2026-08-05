@@ -50,10 +50,17 @@ export const WorkShowcaseSection: React.FC<{ posts: CaseStudyGridPost[] }> = ({ 
         <div className="gallery-grid reveal-group">
           {placeholders.map((item) => (
             <div key={item.label} className="gallery-item" data-reveal>
-              <ImageSlot label={item.label} spec={item.spec} ratio="3 / 2" />
-              <div className="work-card-meta">
-                <p className="work-card-info">{item.meta}</p>
-                <h3 className="work-card-title">{item.title}</h3>
+              <div className="work-card">
+                <ImageSlot label={item.label} spec={item.spec} ratio="3 / 2" />
+                <div className="work-card-meta">
+                  <p className="work-card-info">{item.meta}</p>
+                  <h3 className="work-card-title">
+                    <span>{item.title}</span>
+                    <span className="work-card-arrow" aria-hidden="true">
+                      <ArrowRight />
+                    </span>
+                  </h3>
+                </div>
               </div>
             </div>
           ))}

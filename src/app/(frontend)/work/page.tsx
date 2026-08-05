@@ -36,7 +36,7 @@ export default async function WorkPage() {
         </div>
       </section>
 
-      <section className="container">
+      <section className="container section-bottom">
         {posts.length > 0 ? (
           <WorkIndex posts={posts} />
         ) : (

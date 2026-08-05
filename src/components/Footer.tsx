@@ -83,11 +83,15 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* The right-hand slot used to repeat siteConfig.location.line1, which is
+            the same "Ataleea LLC" already sitting in the copyright line beside
+            it. The privacy policy has to be reachable from every page, and this
+            is where a reader looks for it. */}
         <div className="footer-bottom">
           <span>
             &copy; {new Date().getFullYear()} {siteConfig.author}
           </span>
-          <span>{siteConfig.location.line1}</span>
+          <Link href="/privacy">Privacy</Link>
         </div>
       </div>
     </footer>

@@ -73,7 +73,7 @@ export default function CommentForm({
     return (
       <div className="comment-form comment-form-done">
         <p>Thanks, your comment is awaiting review. It&rsquo;ll show up here once approved.</p>
-        <button type="button" onClick={() => setSent(false)}>
+        <button type="button" className="btn btn-outline" onClick={() => setSent(false)}>
           Leave another
         </button>
       </div>
@@ -129,7 +129,7 @@ export default function CommentForm({
 
       {error && <p className="contact-error">{error}</p>}
 
-      <button type="submit" disabled={submitting}>
+      <button type="submit" className="btn btn-solid" disabled={submitting}>
         {submitting ? 'Sending…' : 'Post comment'}
       </button>
     </form>

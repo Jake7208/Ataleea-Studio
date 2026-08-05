@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Inter, Inter_Tight } from 'next/font/google'
 import React from 'react'
 
 import { siteConfig } from '@/site.config'
@@ -39,6 +40,33 @@ export const metadata: Metadata = {
   },
 }
 
+/**
+ * Both faces are fetched at build time and served from this origin.
+ *
+ * They used to arrive through an `@import` of the Google Fonts stylesheet at the
+ * top of styles.css, which is the slowest way to load a font: the browser has to
+ * fetch styles.css, parse it, fetch Google's stylesheet, parse that, and only
+ * then start on the woff2 files — three serial round trips to two other origins
+ * before a word of text can render. It also put a third-party request on every
+ * page, which is the part that shows up in the DevTools Issues tab.
+ *
+ * `display: swap` keeps the fallback visible while the real face loads, and the
+ * variables below are what styles.css reads through --font-display/--font-text.
+ */
+const interTight = Inter_Tight({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-inter-tight',
+  display: 'swap',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
 // Runs before first paint so reveal targets are hidden without a flash — and,
 // crucially, stay visible if JavaScript never runs.
 const REVEAL_INIT = `try{var e=document.documentElement;e.setAttribute('data-reveal-ready','');if(matchMedia('(prefers-reduced-motion: reduce)').matches){e.setAttribute('data-reveal-off','')}}catch(_){}`
@@ -52,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     // suppressHydrationWarning: the inline script stamps attributes on <html>
     // before React hydrates
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${interTight.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         {/* In <head> and parser-blocking, so it has run before the body is
             parsed and therefore before anything paints. Both attributes it sets

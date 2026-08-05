@@ -42,7 +42,7 @@ export default async function BlogIndexPage() {
         </div>
       </section>
 
-      <section className="container">
+      <section className="container section-bottom">
         {posts.length > 0 ? (
           <JournalList posts={posts} />
         ) : (

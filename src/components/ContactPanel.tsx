@@ -25,10 +25,24 @@ export function useContactPanel() {
 export function ContactPanelProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [topic, setTopic] = useState<ContactTopic | undefined>()
+  /**
+   * Whether the panel has ever been opened.
+   *
+   * The form carries a Turnstile widget, and Turnstile loads a Cloudflare iframe
+   * the moment it mounts — so rendering the form eagerly put a third-party frame,
+   * its script and its network chatter on every page of the site, including case
+   * studies nobody opens the form from. Gating on this defers all of that until
+   * someone actually asks for the panel.
+   *
+   * Sticky rather than tracking `isOpen`, so closing the panel does not throw
+   * away what has been typed into it.
+   */
+  const [hasOpened, setHasOpened] = useState(false)
 
   const open = useCallback((next?: ContactTopic) => {
     setTopic(next)
     setIsOpen(true)
+    setHasOpened(true)
   }, [])
 
   const close = useCallback(() => setIsOpen(false), [])
@@ -50,7 +64,7 @@ export function ContactPanelProvider({ children }: { children: React.ReactNode }
         </p>
 
         {/* remount on topic change so the form picks up the new default */}
-        <ContactForm key={topic ?? 'default'} initialTopic={topic} />
+        {hasOpened && <ContactForm key={topic ?? 'default'} initialTopic={topic} />}
 
         <div className="contact-detail">
           <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>

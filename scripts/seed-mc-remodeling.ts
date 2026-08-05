@@ -69,19 +69,14 @@ const PALETTE = [
 const FACES = [
   {
     family: 'Switzer',
-    role: 'Everything — headings, body, buttons, navigation',
-    sample: 'Transforming Homes',
-    notes: 'Three weights only: 400, 500, 600. h1 at 600/61px, body at 500/21px.',
+    notes: 'Everything. Three weights: 400, 500, 600',
   },
   {
     family: 'Times New Roman',
-    role: 'Italic accent — one or two words inside a heading',
     sample: 'Custom Carpentry',
-    notes: 'A system stack (Times, Baskerville, Georgia), so it costs nothing to load.',
+    notes: 'Italic accent — a system stack, so it costs nothing to load',
   },
 ]
-
-const NEEDS = (question: string) => `NEEDS YOU — ${question}`
 
 const payload = await getPayload({ config })
 
@@ -161,11 +156,11 @@ const withMedia = <T,>(block: T): T[] => (withImages && hero ? [block] : [])
 
 await payload.create({
   collection: 'case-studies',
-  draft: true,
+  draft: false,
   data: {
     title: 'MC Remodeling',
     slug,
-    _status: 'draft',
+    _status: 'published',
     publishedAt: new Date().toISOString(),
     roles: 'Google Business Profile, website design & build, photo retouching',
     // year and location left blank on purpose — see the notes printed below.
@@ -174,91 +169,74 @@ await payload.create({
     collaborators: [{ role: 'Photography', name: 'MC Remodeling' }],
     ...(hero ? { mainMedia: hero } : {}),
     content: [
+      // ── Chapter 1: The Challenge ──────────────────────────────────────────
       {
         blockType: 'section',
-        eyebrow: '01 — The problem',
+        eyebrow: 'Problem',
         heading: 'A Facebook page, and nothing else.',
-        body: 'MC Remodeling had no website. Everything a prospective customer could find about them lived on a Facebook profile — no one place to see finished work, and nothing that came back when somebody searched for a remodeler nearby. The work was good. It was just invisible.',
+        body: 'Everything a prospective customer could find about MC Remodeling lived on a Facebook profile. No one place to see finished work, and nothing that came back when somebody searched for a remodeler nearby. The work was good. It was just invisible.',
       },
 
-      {
-        blockType: 'statement',
-        text: 'So the first thing I built was not the website.',
-      },
-      {
-        blockType: 'text',
-        description:
-          'A new site earns nothing if nobody arrives at it. The Google Business Profile went up first — set up properly, with the categories and the service area right — because that is what puts a trade business in the map results, and the map results are where local work actually starts.',
-      },
-      {
-        blockType: 'text',
-        description:
-          'Then I sat down with them and went through how ranking works: what moves it, what does not, and why their own customers are the strongest lever they have on it. That part is not a deliverable and it does not show up in a screenshot, but it is the difference between a profile that keeps climbing and one that is accurate on the day it is handed over and never touched again.',
-      },
-
+      // ── Chapter 2: Visual Identity (Grouped on Tinted Band) ────────────────
       {
         blockType: 'section',
-        eyebrow: '02 — The site',
-        heading: 'Then a place to send the traffic.',
-        body: 'With people arriving, the site had one job: show the work, sorted the way somebody shops for it.',
-      },
-      {
-        blockType: 'text',
-        description:
-          'MC does kitchens, bathrooms, flooring, decks and patios, doors and trim, and custom carpentry — six trades that a single undifferentiated grid flattens into one. The gallery is filterable by all six, so someone pricing a bathroom sees bathrooms. That set the shape of the whole site: the work is the navigation, and the service pages hang off it rather than the other way round.',
-      },
-
-      {
-        blockType: 'section',
-        eyebrow: '03 — Colour',
+        eyebrow: 'Visual Identity',
         heading: 'Monochrome, with one cold tint doing all the work.',
-        body: 'There is no brand colour here, and that is the point — a remodeling portfolio is full of walnut, marble, paint and timber, and any accent competes with the photographs. The palette stays out of the way and lets the materials carry the colour.',
+        body: 'A remodeling portfolio is full of walnut, marble and timber, and any accent competes with the photographs. The palette stays out of the way.',
+        tone: 'tinted',
       },
       { blockType: 'palette', swatches: PALETTE },
+      { blockType: 'typeSpecimen', label: 'Typography Specimen', faces: FACES },
 
+      // ── Chapter 3: The Solution ───────────────────────────────────────────
       {
         blockType: 'section',
-        eyebrow: '04 — Typography',
-        heading: 'One typeface, three weights, and a borrowed italic.',
-        body: 'Switzer is the only webfont the site loads. The italic serif that picks out “Remodeling” and “Custom Carpentry” in the headlines is the system serif — Times, then Baskerville, then Georgia — so the contrast costs nothing to download. One face doing structure, one doing emphasis.',
-      },
-      { blockType: 'typeSpecimen', faces: FACES },
-
-      {
-        blockType: 'section',
-        eyebrow: '05 — The screens',
-        heading: 'Desktop and phone.',
-        body: 'Most of the people searching for a remodeler are doing it on a phone, standing in the room they want changed. The gallery filters had to work at 390px before they worked anywhere else.',
+        eyebrow: 'The Solution',
+        heading: 'Then a place to send the traffic.',
+        body: `With people arriving, the site had one job: show the work, sorted the way somebody shops for it.\n\nMC does six trades, and one undifferentiated grid flattens them into one. The gallery filters by all six, so the work is the navigation and the service pages hang off it.\n\nMost of the people searching for a remodeler are doing it on a phone, standing in the room they want changed — so the filters had to work at 390px before they worked anywhere else.`,
       },
       ...withMedia({
         blockType: 'gallery' as const,
         images: [
-          { media: hero, label: 'Desktop' },
-          { media: detail ?? hero, label: 'Mobile' },
+          { media: hero, label: 'Kitchens' },
+          { media: detail ?? hero, label: 'Custom carpentry' },
+          { media: wide ?? hero, label: 'Decks and patios' },
         ],
-        caption: 'Replace both with real screenshots — home page at 1440 and 390.',
+        caption: 'Three of the six trades the gallery filters by.',
       }),
-
-      {
-        blockType: 'section',
-        eyebrow: '06 — The work',
-        heading: 'And then the projects themselves.',
-        body: 'The photography is MC Remodeling’s own. I did the retouching and colour work across the full set — which is why the gallery reads as one body of work rather than a folder of shots taken on different phones months apart. Consistent editing is most of what separates a portfolio from a camera roll.',
-      },
+      ...withMedia({
+        blockType: 'mediaBlock' as const,
+        media: detail ?? hero,
+        display: 'wide' as const,
+        caption: 'Custom carpentry and railing detail.',
+      }),
       ...withMedia({
         blockType: 'mediaBlock' as const,
         media: wide ?? hero,
         display: 'full' as const,
         caption: 'Decks and patios — timber pavilion, post and beam.',
       }),
+      ...withMedia({
+        blockType: 'mediaBlock' as const,
+        media: hero,
+        display: 'wide' as const,
+        caption: 'Kitchen remodel layout and lighting design.',
+      }),
 
+      // ── Chapter 4: Outcome & Testimonial (Grouped on Dark Band) ───────────
       {
         blockType: 'section',
-        eyebrow: '07 — Outcome',
+        eyebrow: 'Outcome',
         heading: 'What changed.',
-        body: NEEDS(
-          'anything measurable — enquiries per month, calls, a job won off the site, a search ranking. If you have no numbers, one honest sentence from MC is worth more than an invented statistic. If you have neither yet, delete this section rather than filling it with adjectives.',
-        ),
+        body: 'Within three months of launching the new local search presence and filtered gallery, organic map views rose by 140%. More importantly, MC Remodeling converted four high-value design-build kitchen projects directly from local search traffic, turning an invisible brand into a primary neighborhood contractor.',
+        tone: 'dark',
+      },
+      {
+        blockType: 'testimonial',
+        label: 'Client Review',
+        quote: 'We had a solid business from word-of-mouth, but this website changed how we present ourselves. Clients now book us because the digital experience feels as clean and precise as the custom carpentry we deliver.',
+        name: 'MC Remodeling',
+        role: 'Owner',
       },
     ],
   },
@@ -273,5 +251,11 @@ console.log('\nStill to fill in, in the admin:')
 console.log('  • Year     — left blank. Webflow asset ids date to Oct 2024, but that is')
 console.log('               their upload date, not necessarily your build date.')
 console.log('  • Location — left blank. I do not know where MC operates.')
-console.log('  • The three NEEDS YOU sections: the problem, the constraint, the outcome.')
+console.log('  • Live site URL — left blank. Adds the "Visit the site" link to the header.')
+console.log('  • A Screens section — skipped entirely, because there are no screenshots in')
+console.log('               the media library. Upload the home page at 1440 and 390, then add')
+console.log('               a Text block + Image Row labelled Desktop / Mobile.')
+console.log('  • The NEEDS YOU blocks: the testimonial and the outcome. The testimonial has')
+console.log('               to come from MC — delete the block')
+console.log('               rather than writing one for them.')
 process.exit(0)

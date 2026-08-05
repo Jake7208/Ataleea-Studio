@@ -73,6 +73,12 @@ export const Media: CollectionConfig = {
     // /api/media/file route, which is disabled when files are served straight
     // from R2 — so build the public URL from the stored filename instead.
     adminThumbnail: ({ doc }) => {
+      // Payload renders whatever this returns inside an <img>, and sharp builds
+      // no sizes for a video — so left alone this hands the list view an .mp4 to
+      // display as a picture and every clip shows up broken. Returning null puts
+      // the generic file icon there instead, which is at least honest.
+      if (typeof doc?.mimeType === 'string' && doc.mimeType.startsWith('video/')) return null
+
       const sizes = doc?.sizes as { thumbnail?: { filename?: string | null } } | undefined
       const filename = sizes?.thumbnail?.filename || (doc?.filename as string | undefined)
       if (!filename) return null

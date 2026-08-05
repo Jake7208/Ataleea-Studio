@@ -276,21 +276,27 @@ export interface CaseStudy {
       }[]
     | null;
   location?: string | null;
+  /**
+   * Custom brand color for tinted sections (Dennis Snellenberg style).
+   */
+  accentColor?: string | null;
   year?: number | null;
+  /**
+   * Adds a “Visit the site” button to the header. Leave blank if the site is not public yet.
+   */
+  liveUrl?: string | null;
   mainMedia?: (string | null) | Media;
   content?:
     | (
-        | {
-            description: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'text';
-          }
         | {
             /**
              * One sentence, set large — the point of the project rather than a description of it. Use sparingly; two or three in a case study is plenty.
              */
             text: string;
+            /**
+             * A statement on a dark band is the strongest break the page has. That is most of what it is for.
+             */
+            tone?: ('dark' | 'tinted' | 'plain') | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'statement';
@@ -300,16 +306,28 @@ export interface CaseStudy {
              * Optional kicker above the heading. Numbering them helps a long study.
              */
             eyebrow?: string | null;
-            heading: string;
             /**
-             * Optional lead paragraph. Add Text blocks below for the rest.
+             * Optional. Leave it blank for a plain paragraph.
              */
-            body?: string | null;
+            heading?: string | null;
+            body: string;
+            /**
+             * Sits in the content column under the copy, so the text stops owning a full screen of scroll on its own.
+             */
+            media?: (string | null) | Media;
+            /**
+             * Paints a full-width band behind this section. A Colour System, Typography or Testimonial block placed directly below joins the same band, so set the tone here rather than expecting those to carry their own. Two or three panels down a long study is what stops it reading as one unbroken column — every section on a panel is the same problem again.
+             */
+            tone?: ('default' | 'tinted' | 'dark') | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'section';
           }
         | {
+            /**
+             * One word, shown quietly in the left column. Leave blank if a Text block above already introduces the palette.
+             */
+            label?: string | null;
             swatches: {
               name: string;
               hex: string;
@@ -324,30 +342,109 @@ export interface CaseStudy {
             blockType: 'palette';
           }
         | {
-            faces: {
-              family: string;
-              role?: string | null;
-              /**
-               * Shown large as the specimen. Leave blank to use the typeface name itself.
-               */
-              sample?: string | null;
-              notes?: string | null;
-              id?: string | null;
-            }[];
+            /**
+             * One word, shown quietly in the left column. Defaults to “Typography”.
+             */
+            label?: string | null;
+            /**
+             * Replaces the live specimen below. Use this whenever the project’s typeface is not one this site loads — which is most of them. Export SVG with the text outlined, not PNG: it stays crisp at any size and needs no font to render. Two sit side by side, which is how you show a display face against the text face it is paired with.
+             */
+            images?:
+              | {
+                  media: string | Media;
+                  /**
+                   * Optional caption under the specimen. Names the face it shows.
+                   */
+                  label?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Only renders the real letterforms if this site already loads the face. Otherwise it falls back to the site’s own type and quietly shows the wrong thing — use the image above instead.
+             */
+            faces?:
+              | {
+                  family: string;
+                  /**
+                   * The showcase line, set enormous in the face itself. “Aa” is the default and usually the right answer — a word or two works, a sentence does not.
+                   */
+                  sample?: string | null;
+                  /**
+                   * A footnote beside the family name. Keep it to a few words.
+                   */
+                  notes?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'typeSpecimen';
           }
         | {
+            /**
+             * One word, shown quietly in the left column.
+             */
+            label?: string | null;
+            /**
+             * In their words, not yours. A quote you wrote on a client’s behalf reads like one, and this is the block a sceptical reader weighs hardest.
+             */
+            quote: string;
+            name: string;
+            role?: string | null;
+            company?: string | null;
+            /**
+             * Optional headshot. A face makes an attribution harder to discount.
+             */
+            photo?: (string | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonial';
+          }
+        | {
             media: string | Media;
             /**
-             * Photographs usually want full bleed. Screenshots want framing — a browser window running to the page edge reads as the page itself rather than as a picture of one.
+             * Wide is the working setting: it shares its left and right edge with the title, the copy and the swatches, so the page holds one column. Full bleed is a deliberate break — use it once or twice for the shot that deserves it. A page of near-but-not-quite widths reads as a misalignment rather than as rhythm.
              */
-            display?: ('full' | 'framed') | null;
+            display?: ('wide' | 'full' | 'framed') | null;
+            /**
+             * Ignored for stills. Ambient plays whenever the clip is on screen, pauses when it is not, and takes no clicks — so it reads as part of the page rather than as something to operate. Keep those short and silent. Use Player for anything with narration or longer than about twenty seconds, since a clip a reader cannot pause is one they cannot finish.
+             */
+            playback?: ('ambient' | 'player') | null;
             caption?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'mediaBlock';
+          }
+        | {
+            /**
+             * What shows through the display. Export it at the device’s own proportions — the picker below names the exact pixel size — and it lands in the cutout without cropping. A video here autoplays and loops like any other ambient clip, which is what a scrolling screen recording wants.
+             */
+            media: string | Media;
+            /**
+             * 16-inch is 3456 × 2234; 14-inch is 3024 × 1964. Both are 3:2-ish rather than 16:9, so a 1920 × 1080 export will be cropped top and bottom to fit.
+             */
+            device?: ('mbp16-space-black' | 'mbp16-silver' | 'mbp14-space-black' | 'mbp14-silver') | null;
+            /**
+             * The default suits a full-page screenshot: it matches the display’s width, starts at the top and lets the bezel clip the rest, which is how a site on a laptop actually looks. Use Fill only for artwork exported at the display’s exact size — anything else loses its edges. None of the three ever stretches the image.
+             */
+            screenFit?: ('top' | 'cover' | 'contain') | null;
+            /**
+             * Fills whatever the artwork leaves over. The display is roughly 3:2 and a screenshot rarely is, so setting this to the page’s own background colour turns the leftover strip into the page continuing rather than a gap under it. Pick the colour out of the screenshot itself — matched exactly, the join is invisible.
+             */
+            screenColor?: string | null;
+            /**
+             * Height follows from this — the laptop’s proportions are fixed — so there is no separate height to set. Large is the working setting; drop to Medium only when two mockups sit near each other and the second should not shout as loud as the first.
+             */
+            size?: ('large' | 'full' | 'medium' | 'small') | null;
+            display?: ('wide' | 'full') | null;
+            /**
+             * Paints a band behind the device so it sits on a surface instead of floating on the page. A colour pulled from the screenshot itself is usually the right one.
+             */
+            background?: string | null;
+            caption?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'deviceMockup';
           }
         | {
             images: {
@@ -358,6 +455,10 @@ export interface CaseStudy {
               label?: string | null;
               id?: string | null;
             }[];
+            /**
+             * Photographs want cropping — a row of matching shapes reads as one set. Screenshots do not: cropping a phone screen to a photo’s proportions cuts the top and bottom off the thing you are trying to show. Use “keep” for device shots and mockups.
+             */
+            fit?: ('natural' | 'crop') | null;
             /**
              * Optional — describes the row as a whole.
              */
@@ -752,22 +853,18 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         id?: T;
       };
   location?: T;
+  accentColor?: T;
   year?: T;
+  liveUrl?: T;
   mainMedia?: T;
   content?:
     | T
     | {
-        text?:
-          | T
-          | {
-              description?: T;
-              id?: T;
-              blockName?: T;
-            };
         statement?:
           | T
           | {
               text?: T;
+              tone?: T;
               id?: T;
               blockName?: T;
             };
@@ -777,12 +874,15 @@ export interface CaseStudiesSelect<T extends boolean = true> {
               eyebrow?: T;
               heading?: T;
               body?: T;
+              media?: T;
+              tone?: T;
               id?: T;
               blockName?: T;
             };
         palette?:
           | T
           | {
+              label?: T;
               swatches?:
                 | T
                 | {
@@ -797,15 +897,34 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         typeSpecimen?:
           | T
           | {
+              label?: T;
+              images?:
+                | T
+                | {
+                    media?: T;
+                    label?: T;
+                    id?: T;
+                  };
               faces?:
                 | T
                 | {
                     family?: T;
-                    role?: T;
                     sample?: T;
                     notes?: T;
                     id?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        testimonial?:
+          | T
+          | {
+              label?: T;
+              quote?: T;
+              name?: T;
+              role?: T;
+              company?: T;
+              photo?: T;
               id?: T;
               blockName?: T;
             };
@@ -814,6 +933,21 @@ export interface CaseStudiesSelect<T extends boolean = true> {
           | {
               media?: T;
               display?: T;
+              playback?: T;
+              caption?: T;
+              id?: T;
+              blockName?: T;
+            };
+        deviceMockup?:
+          | T
+          | {
+              media?: T;
+              device?: T;
+              screenFit?: T;
+              screenColor?: T;
+              size?: T;
+              display?: T;
+              background?: T;
               caption?: T;
               id?: T;
               blockName?: T;
@@ -828,6 +962,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
                     label?: T;
                     id?: T;
                   };
+              fit?: T;
               caption?: T;
               id?: T;
               blockName?: T;

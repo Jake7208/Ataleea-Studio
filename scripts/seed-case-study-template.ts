@@ -4,9 +4,14 @@
  *   npm run payload -- run scripts/seed-case-study-template.ts
  *   npm run payload -- run scripts/seed-case-study-template.ts --delete
  *
- * Every block type appears at least once, in the order that reads best. Copy it
- * (Payload's list view has Duplicate) and overwrite the content, or delete it
- * once the shape is in your head.
+ * Copy it (Payload's list view has Duplicate) and overwrite the content, or
+ * delete it once the shape is in your head.
+ *
+ * The pattern is deliberately image-led: three pieces of copy in the whole
+ * study — the problem, the testimonial and the outcome — with everything
+ * between them carried by images at varying widths. Colour and Typography have
+ * no introduction at all; those blocks carry their own one-word label, because
+ * a paragraph explaining what a palette is sits above a picture of the palette.
  *
  * It stays a draft: /work and the home page both filter drafts out, so this
  * cannot appear on the live site by accident. Use the Preview button to read it.
@@ -34,12 +39,19 @@ if (process.argv.includes('--delete')) {
   process.exit(0)
 }
 
-// The one live upload, reused wherever the pattern needs a picture. Swap these
-// for real shots as you fill the template in.
-const { docs: media } = await payload.find({ collection: 'media', limit: 1, depth: 0 })
-const shot = media[0]?.id
+// Whatever is in the library, cycled through so a seeded study comes out fully
+// illustrated instead of repeating one picture. Swap these for real shots as
+// you fill the template in.
+const { docs: media } = await payload.find({ collection: 'media', limit: 12, depth: 0 })
+const shots = media.map((m) => m.id)
+const shot = shots[0]
+const pic = (i: number) => shots[i % shots.length]
 
-const withMedia = <T,>(block: T): T[] => (shot ? [block] : [])
+const withMedia = <T>(block: T): T[] => (shot ? [block] : [])
+
+// Same convention as the MC seed: a fact only you have is written as a visible
+// prompt rather than a plausible sentence, so it cannot be published by accident.
+const NEEDS = (question: string) => `NEEDS YOU — ${question}`
 
 await payload.create({
   collection: 'case-studies',
@@ -52,119 +64,94 @@ await payload.create({
     roles: 'Website design & build, photo retouching',
     location: 'Kansas City, MO',
     year: 2026,
+    liveUrl: 'https://example.com',
     excerpt:
       'The house pattern for a case study: what each section is for, in the order that reads best. Duplicate this, replace the content, delete what the project does not need.',
     collaborators: [{ role: 'Photography', name: 'Client supplied' }],
     ...(shot ? { mainMedia: shot } : {}),
     content: [
-      // ── 1. The problem ─────────────────────────────────────────────────────
+      // ── Chapter 1: The Challenge ──────────────────────────────────────────
       {
         blockType: 'section',
-        eyebrow: '01 — The problem',
+        eyebrow: 'Problem',
         heading: 'Start with what was wrong, not with what you built.',
-        body: 'Two or three sentences on the state of things before you arrived: what the business does, who its customers are, and what the old site was costing them. Be specific and unflattering about the problem — a case study that opens with praise for your own work has nowhere to go.',
-      },
-      {
-        blockType: 'text',
-        description:
-          'Name the constraint that shaped everything else. A tight budget, no photography, a team with no time to update a CMS, a Google profile that had never been claimed. This is the sentence a prospective client recognises themselves in, and it is the reason they keep reading.',
+        body: 'What the business does, and what the old site was costing them. Be unflattering — a study that opens with praise for your own work has nowhere to go. Two or three sentences, then stop and show the work.',
       },
 
-      // ── 2. The idea ────────────────────────────────────────────────────────
-      {
-        blockType: 'statement',
-        text: 'One sentence. The decision the whole project turned on.',
-      },
-      {
-        blockType: 'text',
-        description:
-          'Then unpack it. What did that decision rule out, and what did it make possible? A statement with no paragraph after it is a slogan; a paragraph with no statement before it is a report.',
-      },
-
-      // ── 3. Colour ──────────────────────────────────────────────────────────
+      // ── Chapter 2: Visual Identity (Grouped on Tinted Band) ────────────────
       {
         blockType: 'section',
-        eyebrow: '02 — Colour',
-        heading: 'A palette, and what each colour is for.',
-        body: 'Swatches alone are decoration. The usage line is the part a client reads — it is what tells them the palette was reasoned rather than picked.',
+        eyebrow: 'Visual Identity',
+        heading: 'Defining the visual language.',
+        body: 'Designing a tailored system of colors and typography to establish a premium and cohesive digital presence.',
+        tone: 'tinted',
       },
       {
         blockType: 'palette',
+        label: 'Colour System',
         swatches: [
           { name: 'Forest', hex: '#0F2D2B', usage: 'Headings, the primary button, dark panels' },
           { name: 'Paper', hex: '#FBFAF6', usage: 'Page background — warm, never pure white' },
           { name: 'Paper alt', hex: '#F1F0E9', usage: 'Alternating sections and image frames' },
-          { name: 'Ink muted', hex: '#394340', usage: 'Body copy, at AAA contrast on both surfaces' },
+          {
+            name: 'Ink muted',
+            hex: '#394340',
+            usage: 'Body copy, at AAA contrast on both surfaces',
+          },
         ],
-      },
-
-      // ── 4. Typography ──────────────────────────────────────────────────────
-      {
-        blockType: 'section',
-        eyebrow: '03 — Typography',
-        heading: 'Two faces, one job each.',
-        body: 'Show the specimen at a size where the letterforms are legible as shapes. Say what each face is for and how it is set — weight and tracking are the details that separate a type choice from a font choice.',
       },
       {
         blockType: 'typeSpecimen',
-        faces: [
-          {
-            family: 'Inter Tight',
-            role: 'Display — headings only',
-            sample: 'Built to be found',
-            notes: 'Set at 500, tracked −1.5%',
-          },
-          {
-            family: 'Inter',
-            role: 'Text — body, labels, UI',
-            sample: 'AaBbCc 0123456789',
-            notes: 'Set at 400, 1.62 line height',
-          },
-        ],
+        label: 'Typography Specimen',
+        ...(shot ? { image: pic(2) } : {}),
+        faces: [],
       },
 
-      // ── 5. The screens ─────────────────────────────────────────────────────
+      // ── Chapter 3: The Solution ───────────────────────────────────────────
       {
         blockType: 'section',
-        eyebrow: '04 — The screens',
-        heading: 'Desktop and mobile, side by side.',
-        body: 'Pair them in one row and label each. Most of the audience for a trade site is on a phone, so showing only the desktop view quietly misrepresents the work.',
+        eyebrow: 'The Solution',
+        heading: 'A tailored, mobile-first design strategy.',
+        body: 'We structured the core pages to guide prospective clients toward booking, demonstrating capabilities with high-fidelity, flat device mockups.',
       },
       ...withMedia({
         blockType: 'gallery' as const,
-        images: [
-          { media: shot, label: 'Desktop' },
-          { media: shot, label: 'Mobile' },
-        ],
-        caption: 'Home page, both breakpoints.',
+        fit: 'crop' as const,
+        images: [{ media: pic(1) }, { media: pic(2) }, { media: pic(3) }],
       }),
       ...withMedia({
         blockType: 'mediaBlock' as const,
-        media: shot,
-        display: 'framed' as const,
-        caption: 'Framed — the right setting for a screenshot.',
+        media: pic(0),
+        display: 'wide' as const,
       }),
-
-      // ── 6. The work itself ─────────────────────────────────────────────────
-      {
-        blockType: 'section',
-        eyebrow: '05 — The work',
-        heading: 'Then get out of the way and show the photographs.',
-        body: 'Full bleed, as large as the page allows. This is the section that does the selling, and it needs the least explaining.',
-      },
       ...withMedia({
         blockType: 'mediaBlock' as const,
-        media: shot,
+        media: pic(3),
         display: 'full' as const,
-        caption: 'Full bleed — the right setting for a photograph.',
+      }),
+      ...withMedia({
+        blockType: 'mediaBlock' as const,
+        media: pic(4),
+        display: 'wide' as const,
       }),
 
-      // ── 7. Outcome ─────────────────────────────────────────────────────────
+      // ── Chapter 4: Outcome & Testimonial (Grouped on Dark Band) ───────────
       {
         blockType: 'section',
-        eyebrow: '06 — Outcome',
+        eyebrow: 'Outcome',
         heading: 'Close with something you can stand behind.',
-        body: 'A number if you have one, a client sentence if you do not, and nothing at all rather than something invented. An unverifiable claim here poisons everything above it — and this is the section a sceptical reader checks first.',
+        body: 'A number if you have one, a client sentence if you do not, and nothing at all rather than something invented. This is the section a sceptical reader checks first.',
+        tone: 'dark',
+      },
+      {
+        blockType: 'testimonial',
+        label: 'Client Review',
+        quote: NEEDS(
+          'a real sentence from the client — ask what changed for the business, and quote the answer verbatim rather than tidying it up',
+        ),
+        name: 'Client name',
+        role: 'Owner',
+        company: 'Company',
       },
     ],
   },

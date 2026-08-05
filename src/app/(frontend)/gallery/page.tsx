@@ -101,7 +101,7 @@ export default async function GalleryPage({ searchParams }: Props) {
         )}
       </section>
 
-      <section className="container">
+      <section className="container section-bottom">
         {items.length > 0 ? (
           <GalleryGrid items={items} />
         ) : (

@@ -1,6 +1,7 @@
 import React from 'react'
 
 import type { Media } from '@/payload-types'
+import AmbientVideo from '@/components/AmbientVideo'
 import { mediaInfo } from '@/lib/media'
 
 type ImageSlotProps = {
@@ -44,18 +45,11 @@ export default function ImageSlot({
 
   if (info) {
     return info.mime?.startsWith('video/') ? (
-      <video
-        className={className || undefined}
-        src={info.url}
-        // layout artwork, not a clip anyone came to watch: it plays itself,
-        // silently, with no controls to interrupt the page
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        aria-label={info.alt || label}
-      />
+      // Layout artwork, not a clip anyone came to watch — the same treatment
+      // every other video on the site gets, rather than a second hand-rolled
+      // autoplay that misses the reset, the reduced-motion opt-out and the
+      // pointer-events rule that keeps Lenis owning the scroll.
+      <AmbientVideo src={info.url} label={info.alt || label} className={className} />
     ) : (
       // eslint-disable-next-line @next/next/no-img-element -- media served from object storage, dimensions vary
       <img

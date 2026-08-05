@@ -1,5 +1,7 @@
 import React from 'react'
 
+import AmbientVideo from '@/components/AmbientVideo'
+
 type Props = {
   src: string
   srcSet?: string | null
@@ -9,6 +11,12 @@ type Props = {
   width?: number | null
   height?: number | null
   loading?: 'lazy' | 'eager'
+  /**
+   * Render video as scenery rather than as a player: silent, looping, inert to
+   * the pointer, playing only while on screen. No effect on stills, so a slot
+   * that holds either can set it once and stop caring which it got.
+   */
+  ambient?: boolean
 }
 
 /**
@@ -24,10 +32,15 @@ export default function Media({
   width,
   height,
   loading = 'lazy',
+  ambient = false,
 }: Props) {
+  const isVideo = mimeType?.startsWith('video/')
+
   return (
     <div className="media-frame">
-      {mimeType?.startsWith('video/') ? (
+      {isVideo && ambient ? (
+        <AmbientVideo src={src} label={alt} />
+      ) : isVideo ? (
         <video src={src} controls playsInline preload="metadata" />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element -- media served from object storage, dimensions vary
