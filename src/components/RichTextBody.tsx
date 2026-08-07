@@ -25,7 +25,13 @@ const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
       <img
         src={info.url}
         srcSet={info.srcSet ?? undefined}
-        sizes={info.srcSet ? '(max-width: 900px) 100vw, 760px' : undefined}
+        // The article body runs the same 960px column as the hero above it, so
+        // an inline image is drawn wider than the 760px this used to promise —
+        // which is how a picture ends up resampled up from a smaller source.
+        // 880px is the column at its widest, which is around a 1000px viewport:
+        // the gutter grows with vw until it caps, so the content box is wider
+        // there than it is on a large monitor.
+        sizes={info.srcSet ? '(max-width: 900px) 100vw, 880px' : undefined}
         alt={info.alt}
         width={info.width ?? undefined}
         height={info.height ?? undefined}

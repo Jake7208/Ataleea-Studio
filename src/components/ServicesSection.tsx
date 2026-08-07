@@ -3,6 +3,7 @@ import React from 'react'
 
 import { ArrowRight } from '@/components/icons'
 import { services } from '@/lib/services'
+import { reveal } from '@/lib/reveal'
 
 /**
  * Home page teaser. Title and summary only — the detail, the deliverables and
@@ -12,7 +13,7 @@ import { services } from '@/lib/services'
 export const ServicesSection: React.FC = () => (
   <section id="services" className="section">
     <div className="container">
-      <div className="section-head" data-reveal>
+      <div className="section-head" {...reveal}>
         <div>
           <span className="eyebrow">Services</span>
           <h2>Three things, done properly.</h2>
@@ -26,7 +27,7 @@ export const ServicesSection: React.FC = () => (
 
       <div className="services-index">
         {services.map((service) => (
-          <article key={service.slug} className="service-row" data-reveal>
+          <article key={service.slug} className="service-row" {...reveal}>
             <h3 className="service-head">
               {/* decorative: the heading should read as the title alone */}
               <span className="service-num" aria-hidden="true">

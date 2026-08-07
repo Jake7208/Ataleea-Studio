@@ -6,10 +6,11 @@ import ContactForm from '@/components/ContactForm'
 import SlidePanel from '@/components/SlidePanel'
 import { siteConfig } from '@/site.config'
 import type { ContactTopic } from '@/lib/contact-topics'
+import type { PlanId } from '@/lib/plans'
 
 type ContactPanelValue = {
-  /** Open the panel, optionally pre-selecting an enquiry topic. */
-  open: (topic?: ContactTopic) => void
+  /** Open the panel, optionally pre-selecting an enquiry topic and care plan. */
+  open: (topic?: ContactTopic, plan?: PlanId) => void
   close: () => void
 }
 
@@ -25,6 +26,7 @@ export function useContactPanel() {
 export function ContactPanelProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [topic, setTopic] = useState<ContactTopic | undefined>()
+  const [plan, setPlan] = useState<PlanId | undefined>()
   /**
    * Whether the panel has ever been opened.
    *
@@ -39,8 +41,9 @@ export function ContactPanelProvider({ children }: { children: React.ReactNode }
    */
   const [hasOpened, setHasOpened] = useState(false)
 
-  const open = useCallback((next?: ContactTopic) => {
-    setTopic(next)
+  const open = useCallback((nextTopic?: ContactTopic, nextPlan?: PlanId) => {
+    setTopic(nextTopic)
+    setPlan(nextPlan)
     setIsOpen(true)
     setHasOpened(true)
   }, [])
@@ -63,8 +66,14 @@ export function ContactPanelProvider({ children }: { children: React.ReactNode }
           start. I reply within a day.
         </p>
 
-        {/* remount on topic change so the form picks up the new default */}
-        {hasOpened && <ContactForm key={topic ?? 'default'} initialTopic={topic} />}
+        {/* remount when either default changes so the form picks them up */}
+        {hasOpened && (
+          <ContactForm
+            key={`${topic ?? 'default'}-${plan ?? 'none'}`}
+            initialTopic={topic}
+            initialPlan={plan}
+          />
+        )}
 
         <div className="contact-detail">
           <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
@@ -78,15 +87,23 @@ export function ContactPanelProvider({ children }: { children: React.ReactNode }
 export function ContactTrigger({
   className = 'btn btn-solid',
   topic,
+  plan,
   children,
 }: {
   className?: string
   topic?: ContactTopic
+  /** pre-selects a care plan, for the Enquire button on a specific plan */
+  plan?: PlanId
   children: React.ReactNode
 }) {
   const { open } = useContactPanel()
   return (
-    <button type="button" className={className} onClick={() => open(topic)} aria-haspopup="dialog">
+    <button
+      type="button"
+      className={className}
+      onClick={() => open(topic, plan)}
+      aria-haspopup="dialog"
+    >
       {children}
     </button>
   )

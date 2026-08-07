@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import type { Testimonial } from '@/payload-types'
 import { mediaInfo } from '@/lib/media'
 import { ArrowLeft, ArrowRight } from '@/components/icons'
+import { reveal } from '@/lib/reveal'
 
 /** Only the fields the list renders — lets pages query with `select`. */
 export type TestimonialCard = Pick<
@@ -53,7 +54,7 @@ export default function Testimonials({ items }: { items: TestimonialCard[] }) {
   if (count === 0) return null
 
   return (
-    <div className="testimonial-carousel" data-reveal onKeyDown={onKeyDown}>
+    <div className="testimonial-carousel" {...reveal} onKeyDown={onKeyDown}>
       <div className="testimonial-viewport" aria-live="polite">
         {items.map((item, i) => {
           const portrait = mediaInfo(item.image)

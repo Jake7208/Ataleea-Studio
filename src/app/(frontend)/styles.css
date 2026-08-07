@@ -3,8 +3,12 @@
 
 /* ==========================================================================
    Ataleea Studio
-   Editorial layout system: one grotesque, hairline rules, square corners,
+   Editorial layout system: one grotesque, hairline rules, softened corners,
    colour used as ink rather than decoration.
+
+   The structure is still editorial — the grid, the rules and the type do the
+   work. What the radius and motion tokens below change is only the temperature:
+   rounded media and pill controls, and easing that lands rather than stops.
    ========================================================================== */
 
 :root {
@@ -58,6 +62,38 @@
   --accent: light-dark(#0f2d2b, #e8e6dd);
   --accent-ink: light-dark(#fbfaf6, #0a1413);
 
+  /* Signal — the only hue on the site.
+     Everything else here is paper, forest and grey, which is the whole reason
+     this reads at all: it is the one thing on a page that isn't the palette.
+
+     A pale lime against the forest. Note none of these three are light-dark()
+     pairs, and that is the point rather than an oversight: a lime chip carrying
+     forest ink measures the same on cream as it does on near-black, so there is
+     nothing for a scheme to decide. --signal-ink is a literal rather than
+     var(--forest) because it has to stay dark in both schemes, and --forest
+     does drift between them.
+
+                                  ratio
+     signal-ink on signal         11.5:1   chip and button label
+     signal-ink on signal-deep    10.3:1   the same, hovered
+     signal on forest             11.5 light / 11.1 dark
+     signal on paper (dark mode)  14.9:1
+     signal on paper (light mode)  1.2:1   <- see below
+
+     That last row is the constraint the whole scheme is built around: this hue
+     is nearly as light as the paper, so on a light page it can only ever be a
+     FILL carrying dark ink, never ink itself. Lime text on cream is invisible,
+     and lime *behind* forest text is the brightest thing on the page. Which is
+     also why the solid button carries a --signal-ink border: at 1.2:1 the fill
+     alone gives its edge no definition against paper, and a control's boundary
+     owes 3:1. The border is what pays that, not the fill.
+
+     Where it is allowed to be ink, rather than carry it: the forest panels
+     only, where it measures 11:1. See .section-dark .link-arrow. */
+  --signal: #c6f19d;
+  --signal-deep: #b3e882;
+  --signal-ink: #0f2d2b;
+
   /* Surfaces that have to know which way round the page is */
   --paper-blur: light-dark(rgba(251, 250, 246, 0.92), rgba(10, 20, 19, 0.92));
   --tint: light-dark(rgba(15, 45, 43, 0.025), rgba(232, 230, 221, 0.05));
@@ -75,11 +111,88 @@
      the content column, but never touching the screen edge */
   --gutter-wide: clamp(1rem, 1.8vw, 2rem);
   --section-y: clamp(4.5rem, 8.5vw, 9rem);
-  --header-h: 74px;
+  --header-h: 4.25rem;
 
-  /* Motion — ease-out cubic, 0.3s, everywhere */
-  --ease: cubic-bezier(0.33, 1, 0.68, 1);
+  /* Measure — how many characters land on a line before it wraps.
+
+     In ch rather than px on purpose: the unit is the width of a "0" in the
+     element's own font, so one token gives 48 characters per line whether it is
+     set on 15px copy or 19px copy. A px max-width cannot do that; it gives a
+     different measure at every size.
+
+     The body figure is not a preference. Measured off the reference:
+
+                          there    here, before
+       body paragraphs     47ch      61-62ch
+       leads               49ch         54ch
+       headings         21-27ch      22-27ch   <- already right, untouched
+
+     The headings already matched, which is why nothing below touches them. It
+     was only ever the body running long.
+
+     --measure-long is a deliberate exception, not drift. 48ch is right for a
+     block someone scans; it is tight for a journal article someone actually
+     reads, where the eye wants a longer line to avoid a return every few words.
+     Extended prose keeps the old figure. */
+  --measure: 48ch;
+  --measure-lead: 50ch;
+  --measure-long: 62ch;
+  /* The size the measures above are drawn at. Named because `ch` is relative to
+     the element's own font-size, so anything that has to share a column with
+     running prose — an article's lede, set larger — has to be measured at the
+     prose size and not at its own, or 62ch comes out 20% wider and the two
+     columns visibly disagree. */
+  --prose-size: 1.0625rem;
+
+  /* Short prose that has a full row to itself, which on this site means the FAQ
+     answers and nothing else. They sit in a 1310px row, and at --measure they
+     filled 35% of it and ran one answer to ten lines: a narrow column of text
+     with an acre of paper beside it reads as cramped even though the line
+     length is technically ideal. Measure is not the only thing that decides
+     whether copy looks comfortable; the ratio of text to the space it was given
+     does too. 72ch is the top of the readable band, and it is the right call
+     only because these answers are two or three sentences. */
+  --measure-wide: 72ch;
+
+  /* Corner radius.
+     Two values, not four. There used to be a sm/md/lg ladder, and the result was
+     that a single case study passed 12px, 8px, 6px and 0 on the way down with
+     nothing signalling why the number changed: it tracked neither size nor
+     importance nor context, so it read as drift rather than as a system. One
+     value for media and one for controls is the whole vocabulary now.
+
+     Buttons keep their own token rather than sharing one with the media, because
+     that is the one place the shape is doing different work: the media reads as
+     softened, the controls read as rectangular. Set --radius-btn to 0 for a hard
+     square edge.
+
+     Where the radius is applied matters as much as its value — see .media-frame
+     for the rule. Two exceptions to the value itself:
+
+     - Anything running to the viewport edge stays square (.band, .next-lead,
+       .cs-media--full), because a corner with no margin to curve against reads
+       as a fault rather than as a card.
+     - Phone screenshots keep a literal 6px at .cs-shot, tuned against a real
+       handset's screen corner rather than against this scale. */
+  --radius-lg: 12px;
+  --radius-btn: 4px;
+
+  /* Motion.
+     The base ease is easeOutQuint: it leaves fast and lands slowly, which is
+     what keeps a short move from reading as a snap. The extra durations are for
+     things that travel further — a card lifting, or the scroll reveal, both of
+     which look hurried at 0.3s and settle properly given twice that. */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --dur: 0.3s;
+  --dur-md: 0.45s;
+  --dur-lg: 0.7s;
+
+  /* Elevation. One value, and it is only ever paired with a 4px translate on
+     hover — this site has no resting shadows and nothing is elevated by
+     default. It reads as "this one is under the cursor", not as a z-axis.
+     Heavier in dark, where a soft black shadow over a near-black page does
+     nothing at 0.07. */
+  --lift: 0 12px 24px light-dark(rgba(10, 33, 32, 0.07), rgba(0, 0, 0, 0.36));
 }
 
 *,
@@ -152,8 +265,8 @@ html.lenis-smooth iframe {
 
 [data-reveal] {
   transition:
-    opacity var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
+    opacity 0.35s var(--ease),
+    transform 0.35s var(--ease);
 }
 
 /* hidden only once the inline script confirms JS can reveal it again */
@@ -162,22 +275,153 @@ html[data-reveal-ready]:not([data-reveal-off]) [data-reveal] {
   transform: translateY(16px);
 }
 
-html[data-reveal-ready]:not([data-reveal-off]) [data-reveal].is-revealed {
+/* `.is-revealed` is ScrollReveal's, applied after hydration. `[data-shown]` is
+   the inline script's, applied before it — see the note on INTRO_INIT in
+   layout.tsx for why the two cannot use the same hook. */
+html[data-reveal-ready]:not([data-reveal-off]) [data-reveal].is-revealed,
+html[data-reveal-ready]:not([data-reveal-off]) [data-reveal][data-shown] {
   opacity: 1;
   transform: none;
 }
 
-/* siblings in a group come in one after another */
+/* The first-load cascade, marked by ScrollReveal on whatever was already on
+   screen. Same move as every other reveal, given more room and more time:
+   20px over 0.4s rather than 16px over 0.35s.
+
+   It is worth separating because this one is the only reveal nobody scrolled to
+   trigger. A scroll reveal is answering the reader and wants to be prompt; the
+   entry is unprompted, and at the scroll-reveal speed it reads as the page
+   finishing loading rather than as the page arriving. The extra distance is
+   what makes it read as composed — below about 15px the stagger stops being
+   legible as a sequence and just looks like uneven loading. */
+/* The cascade is lit all at once and rises in sequence.
+
+   Both halves used to hang off the stagger together, which made the fade the
+   expensive one: Largest Contentful Paint is not recorded for an element still
+   fading up from transparent, so whichever element held that metric paid the
+   whole 90ms × its place in the queue before its fade even started. On /about
+   and /services that was a paragraph six deep and LCP landed at ~1.2s.
+
+   Nothing about the sequence needed to be carried by the fade. `data-intro` is
+   set on every element in the opening screen in one tick, so opacity here is the
+   whole cascade arriving together; `data-shown` is what the script staggers, and
+   it moves them. The entry still reads as a sequence — it is the same 90ms and
+   the same 0.95s — but it reads it in movement, and the metric is paid once at
+   0.35s instead of once per element.
+
+   transform is deliberately absent from the transition on this first rule. The
+   40px the intro rises from is further than the 28px a scroll reveal uses, and
+   without this the switch between the two would animate — a 12px drift
+   downwards before the rise. Leaving transform out until `data-shown` makes that
+   step instant, and it happens while the element is still at opacity 0. */
+html[data-reveal-ready]:not([data-reveal-off]) [data-reveal][data-intro] {
+  opacity: 1;
+  transform: translateY(20px);
+  transition: opacity 0.3s var(--ease);
+}
+
+/* 0.35s, not the 0.55s this was. Snappy entrance that finishes within 0.3s of the stagger triggering. */
+html[data-reveal-ready]:not([data-reveal-off]) [data-reveal][data-intro][data-shown] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.3s var(--ease),
+    transform 0.35s var(--ease);
+}
+
+/* Enters on movement alone, opaque from the first frame.
+
+   For the one biggest thing above the fold, the fade is not free. Chrome will
+   not record a contentful paint for an element that is still fading up from
+   transparent — it waits for the animation to finish — so a 0.95s entry fade on
+   the hero banner is 0.95s added to Largest Contentful Paint however early the
+   cascade starts. Measured: the banner is comfortably the largest candidate on
+   this page, so nothing else can report before it and the whole metric sat at
+   the end of its fade.
+
+   Only the banner needs this. Everything else in the cascade is smaller than it
+   is, so once the banner has reported, a later fade finishing elsewhere is not a
+   larger paint and cannot move the number — the headline and the lead keep their
+   fade in full. And the banner is the element that loses least by it: it is a
+   near-black panel over page colour, so fading it was doing almost nothing that
+   the rise wasn't already doing. */
+html[data-reveal-ready]:not([data-reveal-off]) [data-reveal='rise'] {
+  opacity: 1;
+}
+
+/* And the other side of that bargain: on a page whose opening screen holds a
+   rise element, everything else in the cascade gets its fade back.
+
+   Lighting the whole cascade at once is a compromise, and it is only worth
+   making on the pages that need it. It is what stops a text LCP paying the
+   stagger, but it also means the entry is a page switching on and then moving,
+   which is the read of content loading rather than of content arriving — the
+   fade stops being part of any single element's entrance and becomes an event
+   that happens to all of them.
+
+   Where a rise element is on screen, none of that is being bought. That element
+   is the largest thing above the fold, it is opaque from the first frame, and
+   nothing smaller finishing a fade later can take the metric off it. So the
+   fade rejoins the stagger here and each element does one gesture: up and in
+   together, at --dur-lg, which is the same move the scroll reveals further down
+   the page make. The stagger is legible in both halves rather than only in the
+   movement.
+
+   The rise element itself is excluded, and that exclusion is the whole point —
+   it keeps its opacity: 1 and its shorter 0.55s rise, so the number it reports
+   is unchanged by any of this. `data-intro-fade` is set by INTRO_INIT in
+   layout.tsx, which is also where the test for "on screen enough to be the LCP"
+   lives.
+
+   `transition: none` on the first rule is for the same reason the unflagged
+   path leaves transform out of its transition: the step from the 28px a scroll
+   reveal starts at to the 40px the intro uses has to be instant, or it reads as
+   a 12px drift downwards before the rise. Here it also holds opacity at 0
+   without animating to it. */
+html[data-intro-fade][data-reveal-ready]:not([data-reveal-off])
+  [data-reveal]:not([data-reveal='rise'])[data-intro] {
+  opacity: 0;
+  transition: none;
+}
+
+html[data-intro-fade][data-reveal-ready]:not([data-reveal-off])
+  [data-reveal]:not([data-reveal='rise'])[data-intro][data-shown] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--dur-lg) var(--ease),
+    transform var(--dur-lg) var(--ease);
+}
+
+/* Nothing running to the viewport edge gets [data-reveal] at all. The translate
+   above lifts the element out of its own layout slot, and the 28px strip it
+   leaves behind is page colour. Under a tinted section that reads as a white
+   band opening up between the two rather than as an entrance, and no amount of
+   easing hides it. Same rule these elements already follow for square corners:
+   with no margin around it, there is nothing for the motion to happen inside.
+   Fade them in place or leave them still. */
+
+/* Siblings in a group come in one after another. Six deep rather than four —
+   the work grid runs longer than that, and past the last delay the remaining
+   cards all landed together and broke the cascade. */
 .reveal-group>[data-reveal]:nth-child(2) {
-  transition-delay: 0.07s;
+  transition-delay: 0.08s;
 }
 
 .reveal-group>[data-reveal]:nth-child(3) {
-  transition-delay: 0.14s;
+  transition-delay: 0.16s;
 }
 
 .reveal-group>[data-reveal]:nth-child(4) {
-  transition-delay: 0.21s;
+  transition-delay: 0.24s;
+}
+
+.reveal-group>[data-reveal]:nth-child(5) {
+  transition-delay: 0.32s;
+}
+
+.reveal-group>[data-reveal]:nth-child(n + 6) {
+  transition-delay: 0.4s;
 }
 
 /* Route changes. Only <main> moves — the header and footer hold still, so a
@@ -246,7 +490,7 @@ h5 {
 p {
   margin: 0 0 1.15em;
   color: var(--ink-muted);
-  max-width: 68ch;
+  max-width: var(--measure);
 }
 
 p:last-child {
@@ -278,28 +522,50 @@ strong {
   font-size: clamp(1.05rem, 1.15vw, 1.25rem);
   line-height: 1.5;
   color: var(--ink-muted);
-  max-width: 54ch;
+  max-width: var(--measure-lead);
 }
 
-/* Small tracked label — the only uppercase in the system. */
+/* Small tracked label — the only uppercase in the system, and now the only
+   place the signal appears on a light page.
+
+   It used to be faint grey text. As a lime chip it is doing the same job, in
+   that it still announces the section and still sits below the heading in the
+   reading order, but it is now what carries the accent across pages that are
+   otherwise entirely paper and forest. The button alone could not: there is at
+   most one per screen, and on a long page you would scroll for a minute
+   between sightings of the brand colour.
+
+   Fixed lime on fixed forest ink, so it is the same chip on cream, on
+   near-black and on a forest panel — which is why the .section-dark override
+   that used to live here is gone rather than restated. Nothing about it
+   depends on what it is sitting on.
+
+   inline-block, not block: the chip has to shrink to its text. Every use is a
+   standalone <p> or <span> followed by a heading, so it still gets its own
+   line. */
 .eyebrow,
 .section-tag,
 .meta-label {
-  display: block;
+  display: inline-block;
   font-family: var(--font-text);
   font-size: 0.6875rem;
   font-weight: 500;
   line-height: 1.4;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--ink-faint);
+  color: var(--signal-ink);
+  background-color: var(--signal);
+  padding: 0.42em 0.85em 0.38em;
+  border-radius: var(--radius-btn);
   margin: 0 0 1.5rem;
-}
-
-.section-dark .eyebrow,
-.section-dark .section-tag,
-.section-dark .meta-label {
-  color: var(--on-dark-faint);
+  /* inline-block shrink-wraps in normal flow but not as a flex or grid item,
+     where the default stretch blows the chip out to the full column — which is
+     how the contact panel ended up with a lime bar across it. Both are needed:
+     align-self fixes flex and grid, fit-content covers a parent that sets
+     align-items itself. */
+  align-self: start;
+  width: fit-content;
+  max-width: 100%;
 }
 
 /* --------------------------------------------------------------------------
@@ -333,7 +599,43 @@ strong {
   padding-bottom: var(--section-y);
 }
 
+/* The ink tokens are remapped at the boundary rather than restated per
+   component. Everything on this site already draws its text from --ink /
+   --ink-muted / --ink-faint and its hairlines from --line, so rebinding those
+   four is enough to move any block onto this ground intact — which is what
+   makes the rhythm below cheap to change. The explicit h1-h4 / p rules that
+   follow are now redundant with it and kept only because a few blocks set
+   their own colour and need something with more specificity to lose to. */
+/* Several sections carry .container on the <section> itself rather than wrapping
+   one, which is fine while the ground is the page colour and wrong the moment it
+   isn't: the background would stop at --max-width and leak paper down both edges
+   on anything wider than 1680px.
+
+   Rather than restructure that markup everywhere, the ground is thrown sideways
+   with a spread shadow and the overflow clipped back on the vertical only. The
+   -100vmax inset is what lets the shadow through horizontally while still
+   cutting it flush at the section's top and bottom edges. --ground is set by
+   each surface below; sections that wrap a container never match this and are
+   unaffected. */
+.section-dark.container {
+  box-shadow: 0 0 0 100vmax var(--ground);
+  clip-path: inset(0 -100vmax);
+}
+
 .section-dark {
+  --ground: var(--forest);
+  --ink: var(--on-dark);
+  --ink-muted: var(--on-dark-muted);
+  --ink-faint: var(--on-dark-faint);
+  --line: var(--line-dark);
+  --line-strong: rgba(241, 240, 233, 0.32);
+  /* --paper-alt is the backing .media-frame paints behind every image, so a
+     transparent PNG has something to sit on. Invisible under a photo, very loud
+     without one: left as cream, a row of case study covers reads as cream slabs
+     on this ground until the images land. Rebinding it here rather than writing
+     a .media-frame rule is deliberate — a rule would tie on specificity with
+     .work-card .media-frame and lose on source order. */
+  --paper-alt: rgba(241, 240, 233, 0.06);
   background-color: var(--forest);
   color: var(--on-dark);
 }
@@ -348,6 +650,34 @@ strong {
 .section-dark p {
   color: var(--on-dark-muted);
 }
+
+/* Two grounds, not three.
+
+   There was briefly a .section-signal here that put whole sections on lime, on
+   the reasoning that a 10% accent has to come from surfaces because buttons are
+   far too small to move a ratio. The arithmetic was right and the premise was
+   wrong. Measuring the site this was modelled on settles it:
+
+                       there    here, at the time
+     dark green        42.7%    29.4%
+     cream             33.1%    56.5%
+     lime               1.6%    12.3%
+     photography       22.7%     1.8%
+
+   Their accent is 1.6%, not 10, and it reads as expensive precisely because it
+   is rare. At 12% the same hue reads as a theme. So there is no lime ground:
+
+     .section        paper    the reading surfaces
+     .section-dark   forest   structural punctuation, used in whole chapters
+     --signal        lime     chips, buttons and arrows only
+
+   The other half of that table is the reason forest is used sparingly and in
+   large pieces rather than alternated. Over there green is the field and cream
+   is the interruption, so a light block reads as a spotlight. Here it is the
+   other way round, and a dark block dropped into a cream page reads as a stripe
+   cutting it in half. Two colours, opposite effect, depending only on which one
+   is the ground. So: few forest blocks, each big enough to read as a chapter,
+   and never one section on and one section off. */
 
 /* Heading block that opens a section: label, title, optional lead. */
 .section-head {
@@ -391,28 +721,6 @@ strong {
   }
 }
 
-/* Media that should fill the viewport width sits outside .container and uses
-   height rather than aspect-ratio, so tall crops stay tall on wide screens. */
-.full-media,
-.full-media img,
-.full-media video,
-.full-media .image-slot {
-  width: 100%;
-  height: var(--media-h, min(80vh, 880px));
-  object-fit: cover;
-  aspect-ratio: auto;
-}
-
-@media (max-width: 768px) {
-
-  .full-media,
-  .full-media img,
-  .full-media video,
-  .full-media .image-slot {
-    height: var(--media-h-sm, min(62vh, 520px));
-  }
-}
-
 .section-dark .rule {
   border-top-color: var(--line-dark);
 }
@@ -426,7 +734,7 @@ strong {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  padding: 0.95rem 1.85rem;
+  padding: 1.1rem 2.35rem;
   font-family: var(--font-text);
   font-size: 0.75rem;
   font-weight: 500;
@@ -434,12 +742,23 @@ strong {
   text-transform: uppercase;
   line-height: 1;
   border: 1px solid transparent;
-  border-radius: 0;
+  border-radius: var(--radius-btn);
   cursor: pointer;
   transition:
     background-color var(--dur) var(--ease),
     color var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
+    border-color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+/* Rises to meet the cursor and returns on press. Small on purpose — 2px is
+   enough to register as responsive without the button appearing to float. */
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn:disabled {
@@ -447,18 +766,31 @@ strong {
   cursor: not-allowed;
 }
 
+/* Every .btn-solid on the site is the primary action of wherever it sits — the
+   hero and header CTAs, the panel, and the two form submits — so the hue tracks
+   "the thing to press" rather than being sprinkled per-page.
+
+   The border is load-bearing, not trim: see the note at --signal for why a fill
+   this light needs an edge drawn round it on paper. */
 .btn-solid,
-.btn-primary {
-  background-color: var(--accent);
-  color: var(--accent-ink);
-  border-color: var(--accent);
+.btn-primary,
+.btn-light {
+  background-color: var(--signal);
+  color: var(--signal-ink);
+  border-color: var(--signal-ink);
 }
 
+/* Deepens rather than emptying out. The old hover dropped the fill entirely and
+   left a faint outline, which was a reasonable read when the button was forest
+   and merely inverted — on a lime button it reads as the control switching off
+   under the cursor. Staying filled and going one step darker keeps the 2px rise
+   above as the thing that answers the pointer. */
 .btn-solid:hover,
-.btn-primary:hover {
-  background-color: transparent;
-  color: var(--ink);
-  border-color: var(--line-strong);
+.btn-primary:hover,
+.btn-light:hover {
+  background-color: var(--signal-deep);
+  color: var(--signal-ink);
+  border-color: var(--signal-ink);
 }
 
 .btn-outline,
@@ -475,17 +807,16 @@ strong {
   border-color: var(--accent);
 }
 
-.btn-light {
-  background-color: var(--on-dark);
-  color: var(--forest);
-  border-color: var(--on-dark);
-}
+/* .btn-light used to be a cream button, and existed because a forest button on
+   a forest panel is invisible. The signal solves that on its own — it is the
+   highest-contrast thing available on forest at 11.5:1 — so the class now just
+   points at the primary button above rather than being a second appearance.
 
-.btn-light:hover {
-  background-color: transparent;
-  color: var(--on-dark);
-  border-color: var(--line-dark);
-}
+   It is kept as a name because the footer's closing CTA still uses it, and
+   because "the primary button, on a dark panel" is a distinction worth being
+   able to make later. Right now it resolves to the same thing, which is the
+   correct answer: the closing CTA on every page is the same button as the one
+   in the header. */
 
 .section-dark .btn-outline,
 .section-dark .btn-secondary {
@@ -541,7 +872,9 @@ strong {
 
 .link-arrow .arrow-icon {
   opacity: 0.5;
-  transition: opacity var(--dur) var(--ease);
+  transition:
+    opacity var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 
 .link-arrow:hover .arrow-icon {
@@ -552,6 +885,24 @@ strong {
 .site-footer .link-arrow {
   color: var(--on-dark);
   border-bottom-color: var(--line-dark);
+}
+
+/* The forest panels are the one place the signal is allowed to be ink instead
+   of carrying it — 11:1 there, against 1.2:1 on paper. So the rule draws in
+   lime and the arrow warms to match, and on the light pages both stay ink.
+
+   That asymmetry is deliberate rather than a gap: it means the accent arrives
+   on the footer and the dark bands as *emphasis*, and everywhere else only as
+   a fill. Trying to force it onto light-page links would need a second, darker
+   lime, and two limes stop reading as one accent. */
+.section-dark .link-arrow::after,
+.site-footer .link-arrow::after {
+  background-color: var(--signal);
+}
+
+.section-dark .link-arrow:hover .arrow-icon,
+.site-footer .link-arrow:hover .arrow-icon {
+  color: var(--signal);
 }
 
 .arrow-icon {
@@ -586,6 +937,23 @@ strong {
 
 /* --------------------------------------------------------------------------
    Header
+
+   A flush bar, not a floating capsule. The pill this replaces was the one part
+   of the site speaking a different language, in two ways that were measurable
+   rather than a matter of taste:
+
+   - Its end caps were a 34px radius on a 1680px bar. Media here is 12px and
+     controls are 4px, so the header carried the largest corner on the site by
+     a factor of three, on the one element every page shares.
+   - Its own inset pushed the wordmark about 40px right of --gutter, so the
+     logo was the only thing on any page not standing on the page's left
+     margin. A grid this plain has nowhere to hide that.
+
+   What the capsule was reaching for is worth keeping, so it survives as
+   behaviour rather than as shape: the bar carries no chrome at all over the
+   first screen — just the wordmark and the nav, on paper — and takes a ground
+   and a hairline only once there is content passing underneath it. Header.tsx
+   sets data-state; the three rules below are the whole vocabulary.
    -------------------------------------------------------------------------- */
 
 .site-header {
@@ -595,11 +963,51 @@ strong {
   height: var(--header-h);
   display: flex;
   align-items: center;
-  background-color: var(--paper-blur);
-  backdrop-filter: saturate(180%) blur(12px);
-  border-bottom: 1px solid var(--line);
+  width: 100%;
+  background-color: transparent;
+  /* declared transparent rather than added later so the hairline fades in
+     instead of the bar growing a pixel and shifting its contents */
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color var(--dur-md) var(--ease),
+    border-color var(--dur-md) var(--ease),
+    transform var(--dur-md) var(--ease);
 }
 
+/* Past the fold. --paper-blur is the token the rest of the site already uses
+   for a surface with page behind it, so the header stops being a bespoke
+   colour nothing else references. The blur is only declared here, where there
+   is finally something underneath for it to act on — over the hero it was a
+   compositing layer doing no work. */
+.site-header[data-state='pinned'],
+.site-header[data-state='hidden'] {
+  background-color: var(--paper-blur);
+  backdrop-filter: saturate(150%) blur(14px);
+  border-bottom-color: var(--line);
+}
+
+/* Retracts on the way down, so a long read isn't done with a bar sitting on
+   it, and returns on the first upward scroll. Header.tsx declines to do this
+   at all for readers on reduced motion — see the note there for why that one
+   part goes away and the ground and hairline don't. */
+.site-header[data-state='hidden'] {
+  transform: translateY(-100%);
+}
+
+/* The open menu needs an opaque ground rather than a blurred one: its rows sit
+   on --paper directly below, and a translucent bar above them draws a visible
+   seam across the panel. Also cancels any retraction — the menu cannot open
+   attached to a header that has scrolled off. */
+.site-header.mobile-nav-open {
+  transform: none;
+  background-color: var(--paper);
+  backdrop-filter: none;
+  border-bottom-color: var(--line);
+}
+
+/* No !important padding of its own: it inherits .container's --gutter, which
+   is the entire point of the change — the wordmark now starts exactly where
+   the hero headline starts. */
 .site-header-inner {
   display: flex;
   align-items: center;
@@ -620,9 +1028,17 @@ strong {
 .site-nav {
   display: flex;
   align-items: center;
-  gap: clamp(1.25rem, 2.4vw, 2.5rem);
+  gap: clamp(1.35rem, 2.4vw, 2.5rem);
 }
 
+/* The nav borrows .link-arrow's gesture rather than inventing one: a hairline
+   under the word, drawn in from the left, same origin and same curve as every
+   text link on this site. That is what makes it read as part of the page
+   instead of as chrome sitting on top of it.
+
+   What it replaces was a rounded grey wash behind each word — the only one
+   anywhere here, and it turned four links into four buttons competing with the
+   actual button beside them. */
 .nav-link {
   position: relative;
   font-size: 0.75rem;
@@ -638,33 +1054,64 @@ strong {
   content: '';
   position: absolute;
   left: 0;
+  right: 0;
   bottom: 0;
-  width: 0;
   height: 1px;
   background-color: currentColor;
-  transition: width var(--dur) var(--ease);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
 }
 
-.nav-link:hover,
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-link:hover {
+  color: var(--ink);
+}
+
+/* The page you are on keeps its rule drawn, and goes to ink as well. Both,
+   rather than either: with one signal doing both jobs the current page looks
+   permanently hovered and a hovered link looks current. */
 .nav-link[aria-current='page'] {
   color: var(--ink);
 }
 
-.nav-link:hover::after,
 .nav-link[aria-current='page']::after {
-  width: 100%;
+  transform: scaleX(1);
 }
 
+/* Radius comes from .btn now — it was 9999px, which left the header CTA and
+   the hero CTA, the same button with the same words one screen apart, as two
+   different shapes.
+
+   The padding is still its own. This is the one button that has to fit inside
+   a 68px bar, and it cannot carry .btn's full 1.1rem block padding without
+   setting the header's height for it. */
 .nav-cta {
-  padding: 0.7rem 1.35rem;
+  padding: 0.7rem 1.4rem;
 }
 
-/* Holds everything on the right of the logo. The toggle lives here rather than
-   in .site-nav so it stays put when the nav collapses into the burger. */
+/* Holds everything right of the wordmark. The toggle lives here rather than in
+   .site-nav so it stays put when the nav collapses into the burger.
+
+   Order is navigation, rule, controls: four places to go on one side, two
+   things to do on the other. The hairline is what says so, and it is the same
+   1px --line the rest of the page divides with. Previously the toggle sat to
+   the LEFT of the links, alone in the dead space between them and the
+   wordmark, grouped with nothing. */
 .header-end {
   display: flex;
   align-items: center;
-  gap: clamp(1.25rem, 2.4vw, 2.5rem);
+  gap: clamp(1rem, 1.8vw, 1.75rem);
+}
+
+.header-divider {
+  flex: none;
+  width: 1px;
+  height: 1.5rem;
+  background-color: var(--line);
 }
 
 /* Negative margin cancels the padding, so the button keeps a comfortable hit
@@ -735,6 +1182,37 @@ strong {
   transform: translateY(-3px) rotate(-45deg);
 }
 
+/* The page behind an open menu used to stay at full contrast underneath it,
+   which on the home page put the hero's own lime CTA directly below the
+   menu's — the same button twice, a thumb apart, with nothing saying which one
+   the menu meant. Same --scrim the slide panel dims with.
+
+   Starts below the bar rather than at inset 0: the header holds the control
+   that closes this, so it is the one thing that must not be dimmed. Doing it
+   with the offset also keeps the scrim under .mobile-nav on z-index alone,
+   with no stacking context to unpick inside the header. */
+.mobile-nav-scrim {
+  position: fixed;
+  inset: var(--header-h) 0 0 0;
+  z-index: 98;
+  display: none;
+  background-color: var(--scrim);
+  opacity: 0;
+  visibility: hidden;
+  /* hold visibility through the fade, as .mobile-nav does */
+  transition:
+    opacity var(--dur) var(--ease),
+    visibility 0s linear var(--dur);
+}
+
+.mobile-nav-scrim.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--dur) var(--ease),
+    visibility 0s linear 0s;
+}
+
 .mobile-nav {
   position: fixed;
   inset: var(--header-h) 0 auto 0;
@@ -745,6 +1223,9 @@ strong {
   padding: 0.5rem var(--gutter) 2rem;
   background-color: var(--paper);
   border-bottom: 1px solid var(--line);
+  /* square, per the rule at --radius-lg: this runs to both viewport edges, and
+     a corner with no margin to curve against reads as a fault */
+  border-radius: 0;
   opacity: 0;
   visibility: hidden;
   /* hold visibility through the fade so it animates out */
@@ -826,26 +1307,479 @@ strong {
   gap: 1.5rem 2.5rem;
 }
 
-.hero-media {
+/* A forest panel, like .section-dark and the footer: it stays green in both
+   schemes rather than flipping, so the media floating on it and the lime in the
+   shader behave the same way whichever way round the page is.
+
+   The background here is the fallback, not decoration. It is what a browser
+   without WebGL gets, and what shows underneath until the shader's first frame
+   lands, so it is built to be a finished picture on its own rather than a flat
+   fill that would flash. */
+.hero-banner {
+  position: relative;
+  width: 100%;
+  height: min(80vh, 880px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-top: clamp(2.5rem, 5vw, 4.5rem);
-  --media-h: min(86vh, 940px);
+  background-color: #1a3834;
+  background-image:
+    radial-gradient(120% 90% at 18% 12%, rgba(198, 241, 157, 0.12), transparent 50%),
+    radial-gradient(90% 80% at 82% 78%, rgba(15, 45, 43, 0.4), transparent 60%),
+    linear-gradient(155deg, #1f423d 0%, #1a3834 70%);
+}
+
+/* Only hide and fade in the HERO banner on load. The band banner does not hide or shift,
+   preventing white page background gaps from showing during scroll. */
+html[data-reveal-ready]:not([data-reveal-off]) .hero-banner:not(.hero-banner-band) {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 600ms cubic-bezier(0.25, 1, 0.5, 1),
+              transform 600ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+html[data-reveal-ready]:not([data-reveal-off]) .hero-banner:not(.hero-banner-band):has(.hero-banner-canvas[data-ready]) {
+  opacity: 1;
+  transform: none;
+}
+
+/* Behind the media and taking no events. The pointer wake is driven from
+   window-level pointermove instead — see HeroShader — so the trail carries on
+   following the cursor as it crosses the image sitting on top. */
+.hero-banner-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+/* Set by the component once a frame has actually been drawn. Fading in on the
+   attribute rather than on mount is what stops a single black frame appearing
+   between the canvas painting and the shader compiling. */
+.hero-banner-canvas[data-ready] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-banner-canvas {
+    transition: none;
+  }
+}
+
+.hero-banner-content {
+  position: relative;
+  z-index: 2;
+  width: 82%;
+  max-width: 1100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+/* Float the inside ImageSlot above the canvas background */
+.hero-banner-content img,
+.hero-banner-content video,
+.hero-banner-content .image-slot {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: calc(var(--radius-lg) - 4px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  transform: translateY(0);
+  transition: transform var(--dur-md) var(--ease),
+              box-shadow var(--dur-md) var(--ease);
+  will-change: transform, box-shadow;
+}
+
+.hero-banner-content:hover img,
+.hero-banner-content:hover video {
+  transform: translateY(-8px);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+  .hero-banner {
+    height: min(62vh, 520px);
+  }
+
+  .hero-banner-content {
+    width: 90%;
+  }
+}
+
+/* The atmosphere band: the same field, run edge to edge as a pause between two
+   sections. It takes its height from the --media-h that .band sets, so it stays
+   the same height as whatever full-bleed media sat there before it.
+
+   Square corners, which is the site's rule for anything touching the screen
+   edge: a radius needs margin to curve against, and run to the edge the corner
+   has nothing to sit in, so it reads as a rendering fault instead of a card.
+
+   These have to sit below the block above, not next to .hero-banner where they
+   would read better. Both selectors are one class, so specificity is a tie and
+   source order decides — put this first and the mobile .hero-banner height wins
+   and the band comes back at 62vh of its own accord. */
+.hero-banner-band {
+  /* No top margin: the band butts against the section above it, which is the
+     whole point of it. The hero sets its own because it sits inside .hero. */
+  height: auto;
+  min-height: var(--media-h, min(78vh, 820px));
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+  border-radius: 0;
+  background-color: var(--forest);
+  background-image:
+    radial-gradient(120% 90% at 18% 12%, rgba(198, 241, 157, 0.12), transparent 50%),
+    radial-gradient(90% 80% at 82% 78%, rgba(15, 45, 43, 0.4), transparent 60%),
+    linear-gradient(155deg, #1f423d 0%, var(--forest) 70%);
+}
+
+@media (max-width: 768px) {
+  .hero-banner-band {
+    height: auto;
+    min-height: var(--media-h-sm, min(62vh, 520px));
+  }
+}
+
+/* One statement, centred on the field.
+   -------------------------------------------------------------------------- */
+
+/* Absolute rather than a flex child of .hero-banner, which would centre it just
+   as well. The scrim below has to cover the whole band and the text has to sit
+   in the middle of it, and those are two different boxes — so this layer is the
+   band and the <p> inside it is the line. */
+.hero-banner-line {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--gutter);
+  pointer-events: none;
+}
+
+/* The field is generated, so there is no fixed background to have checked this
+   against: any frame can put a bright signal-green fold directly behind the
+   text. The scrim is what makes the contrast a property of the band rather than
+   a property of whichever frame you happened to screenshot.
+
+   Centred and soft-edged so it reads as the field being deeper in the middle,
+   which the field already does on its own, rather than as a panel laid over it.
+   Fixed rgba rather than a token: --forest-deep is dark in both schemes, so the
+   band is dark in both, and a light-dark() pair here would lighten the scrim in
+   dark mode — the one place it must not. */
+.hero-banner-line::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(58% 58% at 50% 50%, rgba(5, 20, 19, 0.62), rgba(5, 20, 19, 0) 74%);
+}
+
+/* Bigger than .statement-title and smaller than .display: this is the loudest
+   line on the page, but it is set on a moving ground and at full display size
+   the field stops being legible behind it.
+
+   The measure is sized to fit one sentence of the statement per line rather
+   than to a comfortable reading width, which is the opposite of how every other
+   measure on this site is set. It has to be: this copy is built on a parallel,
+   and at a narrower measure `text-wrap: balance` evens the line lengths by
+   breaking mid-sentence — "None of these were built / to a template. None of /
+   them look like each other." Balanced, and the parallel that is the entire
+   point of the line is gone. */
+/* `auto` against the layer's `none`: the layer covers the whole band and there
+   is nothing underneath it to click, but this is real copy and it should still
+   be selectable. */
+.band-split-container {
+  pointer-events: none;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: clamp(3rem, 6vw, 6rem);
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: clamp(3rem, 6vw, 5.5rem) var(--gutter);
+  align-items: center;
+}
+
+.band-split-left,
+.band-split-right {
+  pointer-events: auto;
+}
+
+/* Weight 400 and the h2 letter-spacing, like every other heading on the site.
+   This ran at 500 and sat next to a 700 "Recent news", which made the band the
+   only place on the page where the type got heavier rather than larger to say
+   something was important. The size does that job everywhere else. */
+.band-statement-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.6vw, 2.35rem);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--on-dark);
+  letter-spacing: -0.018em;
+  margin: 0;
+  text-align: left;
+}
+
+.band-news-container {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.band-news-empty {
+  font-size: 0.875rem;
+  color: var(--on-dark-muted);
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .band-split-container {
+    grid-template-columns: 1fr;
+    gap: 3.5rem;
+    padding: clamp(3rem, 8vw, 5rem) var(--gutter);
+    align-items: stretch;
+  }
+  .band-statement-title {
+    text-align: center;
+    font-size: clamp(1.4rem, 4.5vw, 2rem);
+  }
+}
+
+.band-news-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 0.5rem;
+}
+
+/* h3 scale, since this heads a column rather than a section. The statement in
+   the left half is the band's h2 and stays the larger of the two. */
+.band-news-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+  font-weight: 400;
+  line-height: 1.24;
+  color: var(--on-dark);
+  letter-spacing: -0.012em;
+  margin: 0;
+}
+
+/* .link-arrow's typography — 0.75rem, tracked, uppercase, text face — but not
+   its rule. The header this sits in already draws one 0.45rem below, and two
+   parallel lines that close together read as a mistake rather than as an
+   underline. Everything else about it matches the "All work" link on the home
+   page's work section. */
+.band-news-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--on-dark);
+  text-decoration: none;
+  transition: color var(--dur) var(--ease);
+}
+
+.band-news-all .arrow-icon {
+  width: 1.125rem;
+  opacity: 0.5;
+  transition:
+    opacity var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+/* lime on the dark band, as on the forest panels and the footer */
+.band-news-all:hover,
+.band-news-all:hover .arrow-icon {
+  color: var(--signal);
+  opacity: 1;
+}
+
+.band-news-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.band-news-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  text-decoration: none;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.band-news-row:hover {
+  opacity: 0.95;
+}
+
+.band-news-thumb {
+  width: 120px;
+  height: 75px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: var(--forest-deep);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.band-news-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.band-news-meta-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex-grow: 1;
+}
+
+.band-news-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--on-dark-muted);
+}
+
+/* The same lime chip as .eyebrow — same weight, tracking and radius. It was a
+   heavier, tighter, squarer variant, which made it a second chip rather than
+   the one the rest of the site uses. */
+.band-news-tag {
+  background-color: var(--signal);
+  color: var(--signal-ink);
+  padding: 0.42em 0.85em 0.38em;
+  border-radius: var(--radius-btn);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.band-news-row-title {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 2.2vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
+  color: var(--on-dark);
+  margin: 0;
+  transition: color var(--dur) var(--ease);
+}
+
+.band-news-row:hover .band-news-row-title {
+  color: var(--signal);
+}
+
+@media (max-width: 768px) {
+  .band-news-row {
+    gap: 1rem;
+    padding: 0.85rem 0;
+  }
+  .band-news-thumb {
+    width: 90px;
+    height: 58px;
+  }
+}
+
+.hero-banner-line p {
+  pointer-events: auto;
+  position: relative;
+  margin: 0;
+  max-width: 40ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.3vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: var(--on-dark);
+}
+
+/* Each sentence is its own block, so the break between them is structural
+   rather than something the measure happens to produce. On a wide screen that
+   is one sentence per line; on a phone each sentence wraps to two and the break
+   between the two halves survives, which is the part that matters. `balance` is
+   applied here rather than on the <p> for the same reason — per sentence it
+   evens the lines within a sentence, on the whole paragraph it evens them
+   across the full stop. */
+.hero-banner-line p span {
+  display: block;
+  text-wrap: balance;
 }
 
 .hero-index-wrap {
   margin-top: clamp(2.5rem, 4.5vw, 4rem);
+  position: relative;
 }
 
 .hero-index-wrap .hero-index {
   margin-top: 0;
 }
 
-/* Three capability notes replacing the old stat blocks. */
 .hero-index {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(1.5rem, 3vw, 3.5rem);
   margin-top: clamp(4rem, 8vw, 7rem);
   border-top: 1px solid var(--line);
+}
+
+/* Hide CSS border-top when JavaScript is enabled and we are on desktop.
+   This prevents double-rendering behind the SVG path. */
+html[data-reveal-ready] .hero-index-wrap .hero-index {
+  border-top: 0;
+}
+
+/* Restore the standard top border on mobile where the SVG doesn't render. */
+@media (max-width: 768px) {
+  html[data-reveal-ready] .hero-index-wrap .hero-index {
+    border-top: 1px solid var(--line);
+  }
+}
+
+/* Custom scroll-triggered cards fade-in animation for desktop viewports */
+@media (min-width: 769px) {
+  html[data-reveal-ready]:not([data-reveal-off]) .hero-index-item.scroll-triggered-card {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+  }
+
+  html[data-reveal-ready]:not([data-reveal-off]) .hero-index-item.scroll-triggered-card.is-revealed {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  html[data-reveal-ready]:not([data-reveal-off]) .hero-index-item.scroll-triggered-card.is-revealed-via-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .hero-index-item {
@@ -860,8 +1794,12 @@ strong {
   margin-bottom: 1.25rem;
 }
 
-.hero-index-item h3 {
+/* Sized here rather than by the tag: these are h2 for the outline's sake — they
+   are the first headings under the page's h1 — and an h2's default size would
+   put them level with the section titles below. */
+.hero-index-item h2 {
   font-size: clamp(1.25rem, 1.7vw, 1.6rem);
+  line-height: 1.24;
   margin-bottom: 0.6rem;
 }
 
@@ -904,6 +1842,8 @@ strong {
   object-fit: cover;
   aspect-ratio: auto;
   border-right: 0;
+  /* runs off the right edge, so only the left corners are ever on screen */
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
 }
 
 .statement-title {
@@ -989,7 +1929,7 @@ strong {
 }
 
 .service-summary {
-  max-width: 52ch;
+  max-width: var(--measure);
   margin: 0;
 }
 
@@ -1098,7 +2038,7 @@ strong {
 }
 
 .service-detail-body>p {
-  max-width: 62ch;
+  max-width: var(--measure);
 }
 
 /* the opening line carries the service — full-strength ink rather than the
@@ -1199,19 +2139,34 @@ strong {
   padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.5rem, 3.5vw, 3.25rem);
   background-color: var(--paper);
   border-left: 1px solid var(--line);
+  /* only the leading edge is ever off the screen edge */
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   overflow-y: auto;
   overscroll-behavior: contain;
   transform: translateX(100%);
-  transition: transform var(--dur) var(--ease);
+  transition: transform var(--dur-md) var(--ease), width var(--dur-md) var(--ease);
 }
 
 .slide-panel-root.is-open .slide-panel {
   transform: translateX(0);
 }
 
-.slide-panel-close {
+/* Wider working width, for the enquiry form's longer sections. Transitioned
+   on the same curve as the slide itself, so widening reads as the panel
+   moving rather than the layout snapping. */
+.slide-panel-root.is-wide .slide-panel {
+  width: min(60rem, 100%);
+}
+
+.slide-panel-actions {
   align-self: flex-end;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.slide-panel-action {
   font-family: var(--font-text);
   font-size: 0.6875rem;
   font-weight: 500;
@@ -1226,9 +2181,18 @@ strong {
   transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 
-.slide-panel-close:hover {
+.slide-panel-action:hover,
+.slide-panel-action[aria-pressed='true'] {
   color: var(--ink);
   border-bottom-color: var(--ink);
+}
+
+/* 37rem is .slide-panel's own width — below it the panel already fills the
+   screen, so there is nothing left for Expand to widen. */
+@media (max-width: 37rem) {
+  .slide-panel-expand {
+    display: none;
+  }
 }
 
 .slide-panel-body {
@@ -1361,30 +2325,53 @@ strong {
   margin-top: auto;
 }
 
+/* Third cell of the pricing grid, and not a plan: a build is quoted against a
+   written scope, so it has no monthly figure to sit beside the two that do.
+   Carrying no price block is most of what separates it — the rest is the
+   quieter heading, so the eye reads two prices and a note rather than three
+   options. */
+.plan-aside .plan-name {
+  font-family: var(--font-text);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--on-dark-faint);
+  margin-bottom: 1.25rem;
+}
+
+/* .plan .link-arrow already pins the link to the bottom, so it lines up with
+   the two Enquire links beside it. */
+.plan-aside .plan-desc {
+  margin-bottom: 1.25rem;
+}
+
 /* --------------------------------------------------------------------------
    Work cards — shared by the home showcase and the work index
    -------------------------------------------------------------------------- */
 
-/* Two up rather than three — bigger frames read as work, not thumbnails. */
+/* Three up at full width, stepping down to two and then one.
+
+   Two up gave each project a frame the size of a hero, which flattered a good
+   cover and left a weak one nowhere to hide. Three reads as an index: the row
+   is the unit, not the individual card, and the eye compares across it rather
+   than stopping on each one. The gaps tighten to match — wide gutters at this
+   size pull the row apart into three separate things. */
 .gallery-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(2.5rem, 5vw, 5rem) clamp(1.5rem, 2.5vw, 2.5rem);
+  gap: clamp(2.25rem, 4vw, 3.25rem) clamp(1.25rem, 1.8vw, 1.75rem);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 700px) {
   .gallery-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  /* an odd item would sit orphaned in a two-up grid — run it wide instead,
-     which reads as deliberate rhythm rather than a gap */
-  .gallery-grid>.gallery-item:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-
-  .gallery-grid>.gallery-item:last-child:nth-child(odd) :is(.image-slot, img, video, .media-frame) {
-    aspect-ratio: 21 / 9;
+@media (min-width: 1100px) {
+  .gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -1396,14 +2383,22 @@ strong {
   display: block;
   color: var(--ink);
   text-decoration: none;
+  transition: transform var(--dur-md) var(--ease);
 }
 
+/* 4:3 rather than 3:2. The covers are composed artwork now, not photographs,
+   and the extra height is where a site screenshot sits on its background
+   without the composition running out of room above and below it. */
 .work-card .media-frame {
   width: 100%;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 4 / 3;
+  /* same 6px as .news-card-image — the corner is what makes the two card types
+     read as the same object across the work grid and the newsroom */
+  border-radius: 6px;
   background-color: var(--paper-alt);
   overflow: hidden;
   position: relative;
+  transition: box-shadow var(--dur-md) var(--ease);
 }
 
 .work-card .media-frame img,
@@ -1411,13 +2406,29 @@ strong {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s var(--ease), opacity var(--dur) var(--ease);
+  transition: transform 0.8s var(--ease);
+}
+
+/* Slow, and the artwork travels inside a frame that holds still.
+
+   The card used to rise 4px on hover. Everything the lift was doing is now done
+   by the rule under the card filling in — the same signal the news cards give,
+   and one that does not ask a row of three covers to move. What is left is the
+   shadow, which was always the part that separated the hovered card from the
+   row, and the slow scale inside the frame.
+
+   Same --lift as .cs-swatch. There is one elevation on this site, not a scale
+   of them.
+
+   Still no opacity fade: dimming a cover to signal a link makes the work look
+   worse the moment someone shows interest in it. */
+.work-card:hover .media-frame {
+  box-shadow: var(--lift);
 }
 
 .work-card:hover .media-frame img,
 .work-card:hover .media-frame video {
-  transform: scale(1.04);
-  opacity: 0.88;
+  transform: scale(1.03);
 }
 
 .work-card .image-slot {
@@ -1447,50 +2458,128 @@ strong {
   transform: translateY(-4px);
 }
 
+/* The rule sits on this block rather than on the title, so it closes the card
+   under the roles line instead of cutting between the title and it. Same place
+   it lands on a news card — under the last line of content — the work card just
+   has one more line to clear. */
 .work-card-meta {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding-top: 1.25rem;
+  align-items: start;
+  gap: 0.3rem;
+  padding-top: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
 }
 
-.work-card-info,
-.work-card-tag {
+.work-card-meta::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0;
+  height: 1px;
+  background-color: var(--ink);
+  transition: width 0.24s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.work-card:hover .work-card-meta::after {
+  width: 100%;
+}
+
+/* Chip and year, above the title. The news card's .news-card-meta with a
+   smaller bottom gap, because .work-card-meta already sets one. */
+.work-card-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.13em;
   text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.45rem;
+}
+
+/* The lime chip on a card, work or news. One rule for both, because they are
+   one chip: CaseStudyGrid and NewsCard are deliberately the same object with
+   different content, and this lived as two identical copies four thousand lines
+   apart until the dark-mode fill below was applied to the news copy and not
+   this one. The work chip then sat at 1.5:1 in dark for as long as it took
+   someone to look at it. Same chip, one rule.
+
+   Same chip as .eyebrow and .band-news-tag, but the fill has to change with the
+   scheme and the ink does not.
+
+   On cream the chip is a 24% lime tint rather than the solid fill, because the
+   card sits on paper with nothing around it and a full-strength chip there
+   pulls harder than the title. That reasoning does not survive the scheme flip:
+   the same tint over near-black composites to a muddy #374934, and --signal-ink
+   on it measures 1.5:1 — the chip was legible on cream and invisible in dark,
+   which is worse than either choice made deliberately.
+
+   So dark takes the solid fill, which is what the rest of the site already does
+   wherever a chip sits on a dark ground (.band-news-tag on the home band, and
+   .post-kind above an article). --signal-ink on --signal is 11.5:1 and holds in
+   both schemes, which is the whole reason those three tokens are literals and
+   not light-dark() pairs — see the note at the top of this file. */
+.work-card-tag,
+.news-card-tag {
+  background-color: light-dark(rgba(198, 241, 157, 0.24), var(--signal));
+  color: var(--signal-ink);
+  padding: 0.42em 0.85em 0.38em;
+  border-radius: var(--radius-btn);
+  font-weight: 500;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  line-height: 1;
+}
+
+/* The one place a work card sits on forest is the home page's selected-work
+   section, and the tint above does not survive the move: it is lime at 24% with
+   fixed dark ink on it, which on cream is a soft chip and on forest is dark text
+   on a barely-lit patch. The solid fill is the same chip .band-news-tag and
+   .eyebrow use on dark, at 11:1.
+
+   This is the light scheme's problem only, now that the rule above resolves to
+   the solid fill in dark anyway. Kept unconditional rather than wrapped: the
+   declaration it would be guarded by is the one it already sets. */
+.section-dark .work-card-tag {
+  background-color: var(--signal);
+}
+
+/* Sits under the title, so it is the quiet line rather than the opening one.
+   Sentence case and untracked: at 0.13em uppercase it competed with the title
+   above it instead of supporting it, which is also why the year went up into
+   the chip row and the roles did not — the roles line runs to a full sentence
+   on most projects, and the meta row is for things of fixed length. */
+.work-card-info {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--ink-faint);
   margin: 0;
 }
 
+/* Smaller than it was. The cards are a third of the row rather than half, and
+   the old size ran two-word titles onto a second line in every column.
+
+   No rule of its own: the one on .work-card-meta is the card's underline, and
+   it replaced an arrow that used to fade in beside this title. Both were saying
+   "this is a link"; the rule says it the way the newsroom does. */
 .work-card-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
   font-family: var(--font-display);
-  font-size: clamp(1.2rem, 1.75vw, 1.45rem);
-  font-weight: 500;
-  letter-spacing: -0.015em;
+  font-size: clamp(1.05rem, 1.25vw, 1.2rem);
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  line-height: 1.25;
   margin: 0;
   color: var(--ink);
   transition: color var(--dur) var(--ease);
-}
-
-.work-card-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-muted);
-  opacity: 0;
-  transform: translateX(-0.5rem);
-  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
-}
-
-.work-card:hover .work-card-arrow {
-  opacity: 1;
-  transform: translateX(0);
 }
 
 /* --------------------------------------------------------------------------
@@ -1513,6 +2602,7 @@ strong {
   padding: clamp(1rem, 2vw, 1.75rem);
   background-color: var(--paper-alt);
   border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -1578,26 +2668,27 @@ strong {
   color: var(--on-dark-muted);
 }
 
-/* Edge-to-edge band between sections — the one image that touches the screen. */
+/* Edge-to-edge band between sections — the one thing that touches the screen.
+   It holds the generated field rather than an image now, so all this has left
+   to do is set the height .hero-banner-band reads. The square corners that used
+   to be declared here moved with it, for the same reason they existed: a radius
+   needs margin to curve against, and at the viewport edge it reads as a
+   rendering fault rather than a card. */
+/* 58vh, down from 78vh. At close to a full screen the band was the only block
+   on the page a reader could mistake for something that had failed to load: a
+   screenful of moving green asking for a scroll and giving nothing back. The
+   statement it now carries is most of the fix, but height was the other half —
+   a line floating in 78vh reads as lost in it, and at 58vh the same line reads
+   as set in a band. Still the tallest uninterrupted thing between the hero and
+   the footer, which is what earns it the one statement it holds. */
 .band {
-  --media-h: min(78vh, 820px);
-}
-
-.band .image-slot {
-  border-left: 0;
-  border-right: 0;
+  --media-h: min(58vh, 620px);
+  --media-h-sm: min(54vh, 440px);
 }
 
 /* --------------------------------------------------------------------------
    Filters / tags
    -------------------------------------------------------------------------- */
-
-.gallery-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: clamp(2rem, 4vw, 3.5rem);
-}
 
 .tag {
   display: inline-block;
@@ -1609,8 +2700,8 @@ strong {
   color: var(--ink-muted);
   background: none;
   border: 1px solid var(--line);
-  border-radius: 0;
-  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-btn);
+  padding: 0.7rem 1.4rem;
   cursor: pointer;
   transition:
     color var(--dur) var(--ease),
@@ -1621,13 +2712,6 @@ strong {
 .tag:hover {
   color: var(--ink);
   border-color: var(--line-strong);
-}
-
-/* same forest fill as the checked enquiry chip, so the same ink applies */
-.tag-active {
-  background-color: var(--forest);
-  border-color: var(--forest);
-  color: var(--on-dark);
 }
 
 .tag-row {
@@ -1682,6 +2766,9 @@ strong {
   background-color: transparent;
   border: 0;
   border-bottom: 1px solid var(--line-strong);
+  /* Not an inconsistency with --radius-btn: these are rule-and-label fields with
+     no box, so there is no corner to round. The 0 is here to drop the radius
+     iOS and some Android browsers put on inputs by default. */
   border-radius: 0;
   padding: 0.65rem 0;
   width: 100%;
@@ -1704,9 +2791,27 @@ strong {
   cursor: pointer;
 }
 
+/* Below the faint tier, on purpose, and the only text on the site that sits
+   there.
+
+   Straight --ink-faint is what the field's own label is set in, so a hint in it
+   carried exactly the weight of the label above it and read as a value someone
+   had already typed. Dropping it to 65% puts the hint at about 3.2:1 against
+   paper — under the 7:1 every ink tier holds, and that is the point: it is the
+   one piece of text that is meant to look provisional. Nothing is lost at that
+   contrast, because every field here keeps a visible label and the hint is
+   never the only thing naming it.
+
+   Mixed toward transparent rather than written as a lighter colour so it
+   follows --ink-faint wherever that lands: light scheme, dark scheme, and the
+   remap to --on-dark-faint inside .section-dark.
+
+   The newsletter field is deliberately not part of this. Its label is visually
+   hidden, so its placeholder is the only thing naming the field and has to
+   stay legible — see the note at .newsletter-input::placeholder. */
 .form-input::placeholder,
 .form-textarea::placeholder {
-  color: var(--ink-faint);
+  color: color-mix(in srgb, var(--ink-faint) 65%, transparent);
 }
 
 .form-input:focus,
@@ -1716,7 +2821,22 @@ strong {
   border-bottom-color: var(--ink);
 }
 
-/* Radios that read as buttons — the options are worth seeing at a glance. */
+/* Radios as a segmented field, not as buttons.
+
+   These were four bordered, rounded chips, and they were the only boxes in a
+   form whose every other field is a label over a hairline rule — see the note on
+   border-radius in .form-input above, which spells out that these fields have no
+   box to round. Worse, the selected chip was filled solid forest, which is
+   .btn-solid's treatment, and .btn-solid means "the primary action here". So the
+   answer to a question was dressed as the thing to press, directly above the
+   actual submit. They also wrapped three-then-one, leaving an orphan and a
+   ragged right edge.
+
+   So: the same label-over-a-rule the fields beside it use, arranged on the same
+   two-column grid and the same 2rem gutter as the Name/Company row above. Four
+   options over two columns is the one arrangement with no orphan and no ragged
+   edge, and reusing .form-row's measurements means the rules line up with the
+   field rules either side of them rather than nearly lining up. */
 .choice-group {
   border: 0;
   margin: 0;
@@ -1730,9 +2850,10 @@ strong {
 }
 
 .choice-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 2rem;
+  row-gap: 0.75rem;
 }
 
 .choice {
@@ -1749,16 +2870,19 @@ strong {
 }
 
 .choice span {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1;
   color: var(--ink-muted);
   background-color: transparent;
   border: 1px solid var(--line-strong);
-  padding: 0.75rem 1.1rem;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
   cursor: pointer;
   transition:
     color var(--dur) var(--ease),
@@ -1766,22 +2890,350 @@ strong {
     background-color var(--dur) var(--ease);
 }
 
+/* Custom premium circular radio dot indicator */
+.choice span::before {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background-color: transparent;
+  flex-shrink: 0;
+  transition:
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
 .choice:hover span {
   color: var(--ink);
   border-color: var(--ink);
+  background-color: rgba(241, 240, 233, 0.04);
 }
 
-/* --on-dark, not --paper: the fill is forest in both schemes, but --paper
-   inverts to near-black in dark mode and would put the label dark on dark. */
+.choice:hover span::before {
+  border-color: var(--ink);
+}
+
+/* Active/checked option styling */
 .choice input:checked+span {
-  background-color: var(--forest);
-  border-color: var(--forest);
-  color: var(--on-dark);
+  color: var(--ink);
+  border-color: var(--ink);
+  background-color: rgba(241, 240, 233, 0.08);
+}
+
+.choice input:checked+span::before {
+  border-color: var(--signal);
+  background-color: var(--signal);
+  /* dynamic inner ring matching underlying theme background */
+  box-shadow: inset 0 0 0 2.5px var(--ground, var(--forest));
 }
 
 .choice input:focus-visible+span {
   outline: 1px solid var(--ink);
   outline-offset: 3px;
+}
+
+/* Care plan picker.
+
+   The four topic radios above are one word each, so a pill with a dot is all
+   they need. A plan is a price and a list of what it covers, and someone who
+   arrived here from a button rather than from the pricing grid has never seen
+   either — so these are full-width rows carrying the name, the price and a
+   line of description, with the rest folded away behind a toggle.
+
+   Same dot, same rule weights and same checked treatment as .choice, so the
+   two groups read as one form rather than as a form with a widget in it. */
+.plan-choice-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.plan-choice {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.plan-choice:hover {
+  border-color: var(--ink);
+}
+
+.plan-choice:has(input:checked) {
+  border-color: var(--ink);
+  background-color: rgba(241, 240, 233, 0.08);
+}
+
+.plan-choice:has(input:focus-visible) {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.plan-choice-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+}
+
+/* visually hidden but still focusable, as with .choice */
+.plan-choice-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  margin: 0;
+}
+
+.plan-choice-option::before {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin-top: 0.15rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background-color: transparent;
+  flex-shrink: 0;
+  transition:
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.plan-choice:hover .plan-choice-option::before {
+  border-color: var(--ink);
+}
+
+.plan-choice:has(input:checked) .plan-choice-option::before {
+  border-color: var(--signal);
+  background-color: var(--signal);
+  box-shadow: inset 0 0 0 2.5px var(--ground, var(--forest));
+}
+
+.plan-choice-body {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.plan-choice-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.plan-choice-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.plan-choice-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.plan-choice-period {
+  font-family: var(--font-text);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.plan-choice-desc {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.plan-choice-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  /* lines up with the description, past the radio dot */
+  margin: -0.2rem 0 0 2.5rem;
+  padding: 0 0 0.9rem;
+  font-family: var(--font-text);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+
+.plan-choice-toggle:hover {
+  color: var(--ink);
+}
+
+.plan-choice-chevron {
+  width: 12px;
+  height: 12px;
+  transition: transform var(--dur) var(--ease);
+}
+
+.plan-choice.is-expanded .plan-choice-chevron {
+  transform: rotate(180deg);
+}
+
+/* Collapses to a 0fr grid row rather than to display:none, so opening and
+   closing are a height the browser can interpolate. The inner element is what
+   clips: the content keeps its natural height inside a track that is animating,
+   which is what stops the text reflowing line by line as the panel moves.
+
+   Longer than --dur-md, matching FaqMotion: a block changing size needs more
+   time to read as movement than a colour change does. */
+.plan-choice-detail {
+  margin: 0 1rem 0 2.5rem;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.42s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.26s var(--ease);
+}
+
+.plan-choice-detail.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+/* min-height: 0 because a grid item's automatic minimum size is its content,
+   which would hold the row open at full height and defeat the 0fr.
+
+   Carries no padding of its own for the same reason: min-height cannot zero a
+   box's own padding, so a padding-bottom here left every collapsed card with a
+   16px dead strip under its toggle. The panel's bottom spacing is on the
+   feature list instead, inside the part that gets clipped. */
+.plan-choice-detail-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Two classes deep on purpose: .slide-panel-body p sets 0.9375rem, and the
+   guidance must not outweigh the description it sits under. */
+.plan-choice-detail .plan-choice-guidance {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin: 0 0 0.9rem;
+}
+
+.plan-choice-features {
+  list-style: none;
+  margin: 0;
+  padding: 0.9rem 0 1rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.plan-choice-features li {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ink-muted);
+  padding-left: 1.25rem;
+  position: relative;
+}
+
+.plan-choice-features li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 0.625rem;
+  height: 1px;
+  background-color: var(--line-strong);
+}
+
+/* Expanded panel.
+
+   Every block in the form starts at the left edge and ends at the right one.
+   Email briefly did not — it was capped at half width so its rule would land
+   under Name's — and one field stopping halfway across while the row above and
+   the box below both run the full width reads as unfinished rather than as
+   alignment. The prose is the deliberate exception: paragraphs keep --measure
+   from the global rule, because a line of body copy the width of this panel is
+   not something anyone should have to read.
+
+   Four one-word options across, rather than two rows of stretched pills. */
+.slide-panel-root.is-wide .choice-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 1rem;
+}
+
+/* The plans stay one per row in the wide panel, and that is the whole fix for
+   a bug this rule used to cause.
+
+   They were side by side here, three across, because that is how they are
+   compared on /services. But a grid row is as tall as its tallest item, so the
+   three cards were height-coupled: opening one stretched the other two into
+   tall empty boxes. Switching the row to start-aligned while something was
+   open swapped that for a subtler version of the same fault — the siblings
+   shrank to their own heights on open and snapped back to uniform on close, so
+   every expand moved two boxes that nobody had touched.
+
+   Neither is fixable while the cards share a row, because there is no way to
+   opt an item out of the row height it contributes to. One per row breaks the
+   coupling outright: opening a plan moves that plan and the ones under it, the
+   way any accordion does, and moves nothing else. Wide mode is still doing
+   its job, it is just spending the width on the row rather than on the column
+   count — the head puts the name and the price at opposite ends of it.
+
+   Comparison was never really this control's job either. The grid on /services
+   is where the plans are weighed against each other; by the time someone is in
+   this panel they are picking one. */
+.slide-panel-root.is-wide .plan-choice-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The guidance above keeps --measure, because it is prose. The feature list is
+   not prose — four short strings set one per line left half of the row empty,
+   so they take the width the guidance can't. Halves how far an open plan
+   pushes the rest of the form down, which is the other thing wide mode is for. */
+.slide-panel-root.is-wide .plan-choice-features {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 2.5rem;
+}
+
+.form-help-note {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  margin-top: 0.75rem;
+  padding-left: 0.25rem;
+  opacity: 0.85;
+  animation: formHelpFadeIn 300ms var(--ease) forwards;
+}
+
+@keyframes formHelpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 0.85;
+    transform: none;
+  }
 }
 
 /* Cloudflare renders its own iframe here at a fixed size; this only reserves
@@ -1877,26 +3329,45 @@ strong {
   font-size: clamp(1.05rem, 1.5vw, 1.3rem);
   letter-spacing: -0.012em;
   line-height: 1.3;
-  color: var(--ink);
+  /* Rests at the faint tier and resolves to full ink on hover, focus or open —
+     the row is asking to be picked from a list, so the list reads as quiet
+     until one of them is being considered.
+
+     Colour rather than the opacity fade this replaces. Opacity dimmed the whole
+     summary including the marker, so the plus faded out exactly when it was
+     being aimed at; and it ran the wrong way round, darkest at rest and lighter
+     under the cursor. --ink-faint holds 7.71:1 on paper and 7.05:1 on the tint
+     this section actually uses, so the resting state is still AAA. */
+  color: var(--ink-faint);
   cursor: pointer;
   list-style: none;
-  transition: opacity var(--dur) var(--ease);
+  transition: color var(--dur) var(--ease);
 }
 
 .faq-question::-webkit-details-marker {
   display: none;
 }
 
-.faq-question:hover {
-  opacity: 0.62;
+.faq-question:hover,
+.faq-question:focus-visible,
+.faq-item[open] .faq-question {
+  color: var(--ink);
 }
 
-/* plus that loses its upright stroke when the item opens */
+/* Plus that rotates a half turn while losing its upright stroke, so it lands as
+   a minus. The rotation is invisible on its own — a plus at 180° is the same
+   plus — which is the point: it only reads because one arm is dissolving during
+   the turn, and the turn is what stops that dissolve looking like a glitch. */
 .faq-marker {
   position: relative;
   flex-shrink: 0;
   width: 0.875rem;
   height: 0.875rem;
+  transition: transform var(--dur-md) var(--ease);
+}
+
+.faq-item[open]:not([data-closing]) .faq-marker {
+  transform: rotate(180deg);
 }
 
 .faq-marker::before,
@@ -1904,7 +3375,9 @@ strong {
   content: '';
   position: absolute;
   background-color: currentColor;
-  transition: transform var(--dur) var(--ease);
+  /* matches the rotation above, so the arm finishes dissolving exactly as the
+     half turn lands rather than before it */
+  transition: transform var(--dur-md) var(--ease);
 }
 
 .faq-marker::before {
@@ -1921,18 +3394,36 @@ strong {
   height: 100%;
 }
 
-.faq-item[open] .faq-marker::after {
+/* :not([data-closing]) so the stroke comes back as the panel starts collapsing
+   rather than after it. FaqMotion has to keep the open attribute set for the
+   whole close animation — remove it early and <details> drops the content
+   mid-flight — so without this guard the plus would sit as a minus until the
+   panel had already finished shutting. */
+.faq-item[open]:not([data-closing]) .faq-marker::after {
   transform: scaleY(0);
 }
 
 .faq-answer {
+  /* no padding or animation on the outer wrapper so it can collapse to 0px without layout jumps */
+}
+
+.faq-answer-inner {
   padding-bottom: clamp(1.5rem, 2.5vw, 2rem);
   animation: faq-reveal var(--dur) var(--ease);
 }
 
+/* FaqMotion sets this once it has taken over. The keyframe above is the no-JS
+   and reduced-motion path — it can only play on open, because a closing
+   <details> removes its content on the same frame and there is nothing left to
+   animate. With JS the height animation replaces it entirely, and running both
+   gives the answer two overlapping fades. */
+.faq-list[data-faq-motion] .faq-answer-inner {
+  animation: none;
+}
+
 .faq-answer .rich-text {
   margin-inline: 0;
-  max-width: 62ch;
+  max-width: var(--measure-wide);
   font-size: 0.9375rem;
   line-height: 1.65;
 }
@@ -1971,10 +3462,14 @@ strong {
   border-bottom: 1px solid var(--line-dark);
 }
 
+/* Lime, not cream. The forest panels are the one ground where the accent is
+   allowed to be ink rather than carry it (11.5:1 here), and this is the largest
+   heading that ever sits on one — so it is where that permission is worth
+   spending. */
 .footer-lead-title {
   margin: 0;
   max-width: 16ch;
-  color: var(--on-dark);
+  color: var(--signal);
 }
 
 .site-footer .logo-lockup {
@@ -1988,7 +3483,9 @@ strong {
   padding-block: clamp(3rem, 6vw, 5rem);
 }
 
-.footer-col h4 {
+/* h3 for the outline, but a column label, not a heading anyone reads as one —
+   so the tag's size and weight are replaced wholesale. */
+.footer-col h3 {
   font-family: var(--font-text);
   font-size: 0.6875rem;
   font-weight: 500;
@@ -2034,6 +3531,196 @@ strong {
   border-bottom-color: var(--on-dark);
 }
 
+/* --------------------------------------------------------------------------
+   Footer newsletter
+
+   On forest, so none of the .form-* fields apply: those are ruled and labelled
+   for a cream page and carry --ink. This is the same idea rendered for a dark
+   ground — one rule under a field, the on-dark ink tiers, and the submit as a
+   text-and-arrow link rather than a button, because the footer already has the
+   one button it should have.
+   -------------------------------------------------------------------------- */
+
+/* Same tracks and gutter as .footer-grid above, so the field's rule starts on
+   the Services column edge rather than a few pixels off it. Two rows sharing a
+   container and nearly agreeing is worse than either agreeing or clearly not. */
+.footer-newsletter {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: start;
+  padding-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.footer-newsletter-copy {
+  grid-column: 1 / 3;
+}
+
+.footer-newsletter .newsletter-form {
+  grid-column: 3 / -1;
+}
+
+/* Matches .footer-col h3 — it is the same kind of column label, and inheriting
+   the look by hand here keeps the two from drifting if that one is retuned. */
+.footer-newsletter-copy h3 {
+  font-family: var(--font-text);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--on-dark-faint);
+  margin: 0 0 1rem;
+}
+
+.footer-newsletter-copy p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--on-dark-muted);
+  max-width: 46ch;
+}
+
+.newsletter-form {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Enclosed, where the rest of the site's fields are a rule under a label.
+
+   That treatment is right on the contact form and wrong here, and the width is
+   why: this field runs the last two columns of the footer grid, so a bare rule
+   left an unlit 30rem gap between the placeholder and the action at the far end
+   of it, reading as a gap rather than as somewhere to type. A box the same
+   width reads as room. --radius-btn, not a pill, per the note at the token:
+   controls on this site are rectangular. */
+.newsletter-field {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line-dark);
+  border-radius: var(--radius-btn);
+  background-color: rgba(241, 240, 233, 0.045);
+  /* clips the submit's hover fill to the corner radius */
+  overflow: hidden;
+  transition:
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.newsletter-field:hover {
+  border-color: rgba(241, 240, 233, 0.32);
+}
+
+.newsletter-field:focus-within {
+  border-color: var(--signal);
+  background-color: rgba(241, 240, 233, 0.07);
+}
+
+/* The field is one of two things in a row with an obvious placeholder and a
+   button reading "Join" — a visible label would be a third line saying what the
+   other two already say. Still in the DOM for anyone not looking at it. */
+.newsletter-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.newsletter-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-text);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--on-dark);
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0.95rem 1.15rem;
+}
+
+/* --on-dark-muted, where a placeholder would normally take the faint tier. The
+   tier is measured over bare forest, and this field lays a 4.5% cream tint over
+   it — enough to pull faint down to 6.73:1, under the 7:1 every other ink tier
+   on the site holds. Muted over the same tinted ground is 8.63:1, and still
+   reads as unfilled against typed text at 11.45:1. */
+.newsletter-input::placeholder {
+  color: var(--on-dark-muted);
+}
+
+.newsletter-input:focus {
+  outline: none;
+}
+
+/* A cell of the field rather than a button sitting next to one, and quiet at
+   rest on purpose: the footer already carries "Start a project" in solid lime a
+   few rows up, and two lime buttons in one footer means neither is the thing to
+   press. The accent arrives here only on intent, when the pointer or the
+   keyboard is already on it. */
+.newsletter-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  padding: 0 1.25rem;
+  font-family: var(--font-text);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--on-dark);
+  background: none;
+  border: 0;
+  border-left: 1px solid var(--line-dark);
+  cursor: pointer;
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.newsletter-submit:hover:not(:disabled),
+.newsletter-submit:focus-visible:not(:disabled) {
+  background-color: var(--signal);
+  border-left-color: var(--signal);
+  /* 11.5:1, and the arrow inherits it through currentColor */
+  color: var(--signal-ink);
+  outline: none;
+}
+
+.newsletter-submit:disabled {
+  color: var(--on-dark-faint);
+  cursor: default;
+}
+
+.newsletter-done,
+.newsletter-error {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.newsletter-done {
+  color: var(--signal);
+}
+
+.newsletter-error {
+  color: var(--on-dark-muted);
+}
+
+@media (max-width: 860px) {
+  .footer-newsletter {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .footer-newsletter-copy,
+  .footer-newsletter .newsletter-form {
+    grid-column: 1 / -1;
+  }
+}
+
 .footer-bottom {
   display: flex;
   flex-wrap: wrap;
@@ -2043,6 +3730,49 @@ strong {
   border-top: 1px solid var(--line-dark);
   font-size: 0.8125rem;
   color: var(--on-dark-faint);
+}
+
+/* Sized to fill the container's width at any viewport rather than to a type
+   scale — it is a graphic, not a heading, so the only thing that matters is
+   that it lands flush. line-height is under 1 because the ascenders and the
+   baseline are the whole shape; leading would just be a gap under the footer.
+   Clipped rather than wrapped: at this size a second line is a broken layout,
+   not a long word. */
+.footer-wordmark {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: clamp(2rem, 5vw, 4rem);
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 20vw, 18rem);
+  font-weight: 800;
+  line-height: 0.78;
+  color: var(--signal);
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: none;
+}
+
+.footer-wordmark span {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* Staggered character reveal styles */
+html[data-reveal-ready]:not([data-reveal-off]) .footer-wordmark span {
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--char-index) * 0.05s);
+}
+
+/* Both hooks, because on a page short enough for the footer to be in the opening
+   viewport the wordmark is part of the intro cascade and never gets the class. */
+html[data-reveal-ready]:not([data-reveal-off]) .footer-wordmark.is-revealed span,
+html[data-reveal-ready]:not([data-reveal-off]) .footer-wordmark[data-shown] span {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* --------------------------------------------------------------------------
@@ -2058,12 +3788,8 @@ strong {
   margin-bottom: 0;
 }
 
-.page-intro .gallery-filter {
-  margin: clamp(2rem, 4vw, 3rem) 0 0;
-}
-
 .page-intro-lead {
-  max-width: 58ch;
+  max-width: var(--measure-lead);
   margin-top: 1.25rem;
   font-size: 1.0625rem;
   line-height: 1.72;
@@ -2075,7 +3801,7 @@ strong {
    it needs from the design is a measure short enough to follow and headings
    that are findable. */
 .legal {
-  max-width: 62ch;
+  max-width: var(--measure-long);
   padding-bottom: var(--section-y);
 }
 
@@ -2136,10 +3862,24 @@ strong {
 
 .post-hero {
   padding-block: clamp(3.5rem, 7vw, 6.5rem) clamp(2rem, 4vw, 3rem);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 960px;
+  margin-inline: auto;
 }
 
+/* Runs the full column rather than stopping at 26ch.
+   26ch is the right measure for a headline that stands alone in white space. It
+   is the wrong one directly above a rule that runs the whole 960px: the
+   headline ended two thirds of the way across and the line under it carried on,
+   so the header read as two elements of different widths rather than one block.
+   The rule is the edge of this column, and the headline now meets it. */
 .post-hero h1 {
-  max-width: 20ch;
+  max-width: none;
+  margin-inline: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -2184,7 +3924,7 @@ strong {
 .cs-body>*+.container>.cs-row,
 .cs-body>.cs-band>*+.container>.cs-row {
   border-top: 1px solid var(--line);
-  padding-top: clamp(2rem, 4vw, 3.5rem);
+  padding-top: clamp(2.75rem, 5vw, 5rem);
 }
 
 .cs-row>.cs-label {
@@ -2282,9 +4022,22 @@ strong {
   color: var(--ink-muted);
 }
 
+/* The single longest pause on the page. The hero is the last thing that belongs
+   to the header, so the gap under it is what separates "what this project is"
+   from "here is how it went" — at 5.5rem the two ran together and the study
+   read as one continuous column. */
 .cs-hero {
-  --media-h: min(78vh, 860px);
-  margin-bottom: clamp(3rem, 6vw, 5.5rem);
+  margin-bottom: clamp(4.5rem, 9vw, 9rem);
+}
+
+/* No ground under the hero. .media-frame paints --paper-alt behind every image
+   as a placeholder, which is right for a card in a grid: the frame has a fixed
+   ratio and the grey holds its shape while the image decodes. The hero has no
+   fixed ratio and is sized by the image itself, so the grey never occupies a
+   shape worth holding — it just flashes as a block on the largest image on the
+   page. Kept local to the hero; the cards still want theirs. */
+.cs-hero .media-frame {
+  background-color: transparent;
 }
 
 /* The image sets its own height. A fixed viewport height here made a handsome
@@ -2305,7 +4058,7 @@ strong {
      Deliberately NOT --cs-gap: that name is already taken by .case-study for
      the column gutter inside .cs-row, and declaring it here shadowed it for
      every descendant — which quietly widened the gutter in every section. */
-  --cs-band-gap: clamp(3.5rem, 6vw, 5.5rem);
+  --cs-band-gap: clamp(4.5rem, 8vw, 8rem);
   padding-bottom: var(--section-y);
   display: flex;
   flex-direction: column;
@@ -2385,8 +4138,10 @@ strong {
   color: var(--on-dark);
 }
 
-.cs-band--dark .cs-body-text,
-.cs-band--dark .eyebrow {
+/* .eyebrow used to be recoloured here too. It is a self-contained chip now and
+   reads the same on this band as anywhere else, so it drops out of the
+   selector rather than being restated. */
+.cs-band--dark .cs-body-text {
   color: var(--on-dark-muted);
 }
 
@@ -2442,6 +4197,13 @@ strong {
 }
 
 .cs-band--dark .cs-label {
+  color: var(--on-dark-faint);
+}
+
+/* The shot label and the row's caption both sit at --ink-faint, which is a
+   7:1 grey against cream and invisible against forest. */
+.cs-band--dark .cs-shot-label,
+.cs-band--dark .cs-gallery figcaption {
   color: var(--on-dark-faint);
 }
 
@@ -2519,7 +4281,9 @@ strong {
 .cs-swatch:hover .cs-swatch-chip {
   transform: translateY(-4px);
   border-color: var(--line-strong);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+  /* was a hardcoded rgba(0,0,0,0.05); same geometry, now the shared token so
+     this and .work-card can't drift apart */
+  box-shadow: var(--lift);
 }
 
 .cs-swatch-name {
@@ -2719,8 +4483,28 @@ strong {
   min-width: 0;
 }
 
-.cs-shot img {
-  border: 1px solid var(--line-strong);
+/* The frame carries the shape, not the image: clipping on the wrapper means the
+   corner is cut once, on the box, instead of the image curving inside a box that
+   curves differently.
+
+   Nothing is painted over the artwork. A 1px outline and then a dark scrim both
+   lived here, on the grounds that a phone screenshot is mostly light UI on a
+   light ground and needs an edge of its own against cream. Both of them dulled
+   the work to draw that edge, which is the wrong trade on the one element whose
+   whole job is showing the design. The shot stands on the page as it is. */
+.cs-shot .media-frame {
+  /* The one literal in the file, and deliberately not var(--radius-lg): this is
+     a phone shot, so the corner is tuned against a real handset's screen rather
+     than against the site's scale, and it should not move when the shared token
+     does. Overrides the frame radius set at .media-frame. */
+  border-radius: 6px;
+}
+
+/* Zeroed because the frame clips. Given a radius of its own the image curved
+   inside a box curving less, which reads as a bad crop rather than a corner. */
+.cs-shot .media-frame img,
+.cs-shot .media-frame video {
+  border-radius: 0;
 }
 
 .cs-shot-label {
@@ -2747,23 +4531,29 @@ strong {
 /* Full-bleed media touches whatever sits either side of it, above and below.
    It already runs to both screen edges, so a strip of page colour around it
    reads as the image having been inset by mistake rather than as spacing.
-   `wide` and `framed` are unaffected — they keep the page's normal rhythm.
 
-   This used to carry an exception restoring the gap after a gallery or another
-   media block, on the grounds that two pieces of media should not touch. The
-   full-bleed treatment is a deliberate break now, so the exception is gone. */
+   Note which element the margin lands on: half of this rule collapses the gap on
+   the *neighbour*, not on the full-bleed block, so it reaches blocks that never
+   asked to touch anything. That is what the exception below is for. */
 .cs-body>*+.cs-media--full,
 .cs-body>.cs-media--full+* {
   margin-top: calc(-1 * var(--cs-band-gap));
 }
 
-/* ...with the image row as the exception, on both sides. A row of phone shots
-   is a set of small objects standing on the page, not a surface that fills it —
-   butted against a full-bleed photograph it reads as clutter at the edge of the
-   image rather than as its own section. Same specificity as the rule above, so
-   this has to stay below it to win. */
-.cs-body>.cs-gallery+*,
-.cs-body>*+.cs-gallery {
+/* ...with inset media as the exception, on both sides.
+
+   A row of phone shots is a set of small objects standing on the page, and a
+   wide image is a picture held inside the text column. Neither is a surface that
+   fills the screen, so neither has an edge for a full-bleed neighbour to meet.
+   Butted against one they read as clutter at the edge of the photograph rather
+   than as their own section, and a wide image caught between two full-bleeds
+   lost its spacing on both sides at once.
+
+   `margin-top: 0` rather than a positive value: .cs-body is a flex column, so
+   zeroing the negative margin hands the block back to the column's own gap.
+   Same specificity as the rule above, so this has to stay below it to win. */
+.cs-body> :is(.cs-gallery, .cs-media--wide)+*,
+.cs-body>*+ :is(.cs-gallery, .cs-media--wide) {
   margin-top: 0;
 }
 
@@ -2803,6 +4593,16 @@ strong {
   max-width: calc(var(--max-width) - 2 * var(--gutter));
 }
 
+/* The one place the radius stays on the image rather than the frame. Past
+   --max-width the screenshot is capped narrower than the frame around it and
+   centred, so a corner on the frame would curve somewhere the picture isn't.
+   The frame's placeholder fill goes with it: leave it painted and it shows as
+   wedges at the image's corners, which is only invisible today because the
+   panel behind happens to be the same --paper-alt. */
+.cs-media--framed .media-frame {
+  background-color: transparent;
+}
+
 .cs-media--framed .cs-media-inner img,
 .cs-media--framed .cs-media-inner video {
   width: 100%;
@@ -2810,6 +4610,7 @@ strong {
   margin-inline: auto;
   height: auto;
   border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
 }
 
 /* --- Device mockup -------------------------------------------------------- */
@@ -2980,6 +4781,10 @@ strong {
   --cs-shots: 4;
 }
 
+/* No radius here. Every shot in a row goes through <Media>, so
+   `.cs-shot .media-frame img` outranks this selector and zeroes the corner
+   anyway — the 8px this used to declare never rendered once. The visible corner
+   is the frame's, set at .cs-shot. */
 .cs-gallery-row img,
 .cs-gallery-row video {
   width: 100%;
@@ -2988,23 +4793,18 @@ strong {
   object-fit: cover;
 }
 
+/* Narrowed from 78% / 66%, paired with the narrower ratio below so the shots
+   lose width without losing height. Height is width over the ratio, so cutting
+   one alone shrinks the whole shot — these two numbers have to move together.
+   Recompute both if either changes. */
 .cs-gallery-row[data-count='3'] .cs-shot {
-  width: 68%;
+  width: 67%;
   margin-inline: auto;
 }
 
 .cs-gallery-row[data-count='2'] .cs-shot {
-  width: 55%;
+  width: 57%;
   margin-inline: auto;
-}
-
-.cs-gallery-row[data-count='2'] img,
-.cs-gallery-row[data-count='2'] video,
-.cs-gallery-row[data-count='3'] img,
-.cs-gallery-row[data-count='3'] video {
-  aspect-ratio: 1080 / 2021;
-  object-fit: cover;
-  object-position: center top;
 }
 
 /* Device shots and mockups keep their own proportions. Cropping a phone screen
@@ -3015,11 +4815,6 @@ strong {
   align-items: end;
 }
 
-/* The hairline is doing real work here, not decoration. A phone screenshot is
-   mostly light UI on a light ground, so on cream it has no edge of its own —
-   the shot ends and the page begins with nothing marking where. Same border the
-   framed media block uses, so the two agree, and --line carries its own
-   light-dark pair so it holds in both schemes. */
 .cs-gallery-row[data-fit='natural'] img,
 .cs-gallery-row[data-fit='natural'] video {
   height: auto;
@@ -3027,23 +4822,43 @@ strong {
   object-fit: contain;
 }
 
-/* Portrait shots don't need the full track width — three phones stretched edge
-   to edge read as billboards. Held to a phone-ish width and centred in it. */
-/* The border sits on the cell, not the image — so it encloses the shot and its
-   label together as one object, rather than drawing a box round the artwork and
-   leaving the caption outside it.
+/* Phone rows take one fixed ratio, and it overrides "natural" on purpose: three
+   phones only read as a row if all three are the same shape, and screenshots
+   arrive at whatever ratio the handset that took them uses.
 
-   --line-strong rather than --line: the 14% hairline is calibrated to divide two
-   areas of page colour, and this has to separate a light screenshot from a light
-   ground, which is a bigger job. */
-.cs-gallery-row[data-fit='natural'] .cs-shot {
-  align-items: center;
-  padding: clamp(0.75rem, 1.5vw, 1.25rem);
+   1179/2556 is a current phone screen. It is narrower than the 1080/2021 these
+   were cut to, and that narrowness is most of what makes them read as phones
+   rather than as tall panels. Export phone shots at this ratio and nothing is
+   cropped — anything wider loses a little from each side, which is why the crop
+   is anchored at the top where the status bar and header are. */
+.cs-gallery-row[data-count='2'] img,
+.cs-gallery-row[data-count='2'] video,
+.cs-gallery-row[data-count='3'] img,
+.cs-gallery-row[data-count='3'] video,
+.cs-gallery-row[data-fit='natural'][data-count='2'] img,
+.cs-gallery-row[data-fit='natural'][data-count='2'] video,
+.cs-gallery-row[data-fit='natural'][data-count='3'] img,
+.cs-gallery-row[data-fit='natural'][data-count='3'] video {
+  height: auto;
+  aspect-ratio: 1179 / 2556;
+  object-fit: cover;
+  object-position: center top;
 }
 
+/* Padding removed with the border it was insetting from. With no line on the
+   cell it was just dead space inside an invisible box, and it pulled the label
+   away from the shot it names. */
+.cs-gallery-row[data-fit='natural'] .cs-shot {
+  align-items: center;
+}
+
+/* 30rem rather than 22rem. The cap exists so a single shot in a wide row does
+   not become a billboard, not to keep every shot small — at 22rem a row of
+   three never reached its own tracks and the cap, not the layout, was setting
+   the size. */
 .cs-gallery-row[data-fit='natural'] .media-frame {
   width: 100%;
-  max-width: 22rem;
+  max-width: 30rem;
   margin-inline: auto;
 }
 
@@ -3073,12 +4888,19 @@ strong {
 /* Same reasoning as the device shots: a specimen is black letterforms exported
    on white, so on cream it has no edge and reads as type floating loose on the
    page rather than as a plate showing it. */
+/* Outline on the frame, not the artwork. A specimen is usually pale and needs an
+   edge against the page, but the frame is what carries the corner now — left on
+   the image, the border's square corners were clipped off by the frame's curve
+   and the outline appeared to stop short at each end. */
+.cs-face-sheet .media-frame {
+  border: 1px solid var(--line-strong);
+}
+
 .cs-face-sheet img,
 .cs-face-sheet video {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--line-strong);
 }
 
 .cs-face-sheet figcaption {
@@ -3161,6 +4983,7 @@ strong {
 
 /* Media and body occupy the same grid cell, so the title sits over the
    photograph instead of under it. The whole panel is one link. */
+/* Square for the same reason the band is — it runs to both screen edges. */
 .next-lead {
   position: relative;
   display: grid;
@@ -3326,31 +5149,207 @@ strong {
   }
 }
 
+/* Above the headline: what kind of thing this is, when it is from, how long it
+   takes. The chip is the site's standard lime one; the rest is the same small
+   uppercase grey as .news-card-meta, so an article's kicker and its own card in
+   the feed below say the same thing in the same voice. */
+.post-kicker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.post-kind {
+  background-color: var(--signal);
+  color: var(--signal-ink);
+  padding: 0.42em 0.85em 0.38em;
+  border-radius: var(--radius-btn);
+  line-height: 1;
+}
+
+/* Middots between the grey facts, but never after the chip — its fill already
+   separates it from what follows. */
+.post-kicker>span:not(.post-kind)+span::before {
+  content: '·';
+  margin-right: 0.75rem;
+  color: var(--ink-faint);
+}
+
+/* The excerpt, opening the article under the hero.
+
+   The column is the one .post-body sets — the same width as the hero image
+   above it — so the lede, the prose under it and the picture all share two
+   edges. It used to be capped at 62ch measured at --prose-size, which was the
+   arithmetic needed to make a paragraph set in larger type land on the same
+   column as the body; with both now taking the full width that reconciling is
+   no longer something either element has to do.
+
+   The rule and the gap below belong to the wrapper, not to the paragraph:
+   `p:last-child` zeroes bottom margins, and the standfirst is an only child, so
+   a margin set on it is thrown away and the lede runs straight into the first
+   body paragraph. The hairline is what stops the excerpt reading as the
+   article's first paragraph — it is a summary of the piece, and the line is the
+   difference between "here is the gist" and "here is the beginning". */
+.post-lede {
+  max-width: none;
+  margin-bottom: clamp(2.25rem, 4vw, 3.25rem);
+  padding-bottom: clamp(2rem, 3.5vw, 2.75rem);
+  border-bottom: 1px solid var(--line);
+}
+
+/* Larger than the prose that follows and set in full ink, so it reads as the
+   article's opening line rather than as a caption for the picture above it.
+
+   max-width: none is load-bearing, not tidying. The base `p` rule carries
+   max-width: var(--measure), and 48ch re-measured at this paragraph's larger
+   type came out narrower than the wrapper it sits in — so the lede was inset
+   from the body column instead of matching it. The column is the wrapper's job;
+   this element only has to stop overriding it. */
+/* Sized off the body rather than independently of it. It was a clamp with a
+   1.05rem floor, which was correct against the old 17px prose and wrong the
+   moment .post-body went to 18px: at any width narrow enough to sit on the
+   clamp's floor — which is most phones — the lede came out smaller than the
+   paragraphs it was meant to introduce. Tying it to --prose-size means the step
+   holds at every width by construction, and moving the body size moves this
+   with it instead of silently inverting the two. */
+.post-standfirst {
+  max-width: none;
+  margin: 0;
+  font-size: calc(var(--prose-size) * 1.2);
+  line-height: 1.6;
+  color: var(--ink);
+}
+
 /* Journal byline only. The case study's own fact list moved to .cs-facts,
    which stacks instead of running along one line. */
 .post-byline {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 2.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem 2.5rem;
   padding-top: 2rem;
   border-top: 1px solid var(--line);
   font-size: 0.8125rem;
   color: var(--ink-muted);
+  width: 100%;
 }
 
 .post-byline>* {
   margin: 0;
 }
 
+/* Subjects, as outlined chips rather than a "Tags: a, b, c" run-on. Same pill
+   as .topic-tab, minus the interaction — these are labels, and the newsroom is
+   where you filter by them. */
+.post-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.post-topics li {
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--ink-muted);
+}
+
+/* Copy link. Pushed to the far end of the byline, so the row reads left to
+   right as facts about the article and then the one thing you can do with it. */
+.copy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 9999px;
+  background-color: transparent;
+  font-family: var(--font-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition:
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.copy-link:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Confirmed rather than merely changed: the label alone is a small thing to
+   notice on a click you already expected to work. */
+.copy-link[data-state='copied'] {
+  color: var(--signal-ink);
+  background-color: var(--signal);
+  border-color: var(--signal-ink);
+}
+
+.copy-link[data-state='failed'] {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* The label swaps between "Copy link", "Copied" and "Copy failed", and the
+   button would resize under the pointer on each. Widest of the three, once. */
+.copy-link-label {
+  min-width: 6.5ch;
+  text-align: left;
+}
+
+@media (max-width: 560px) {
+  /* auto margins collapse once the byline wraps, so the button would sit tight
+     against the topic chips above it */
+  .copy-link {
+    margin-left: 0;
+  }
+}
+
 .post-body {
   padding-bottom: var(--section-y);
+  /* A step up from the site's --prose-size, and it is the column that asks for
+     it. The body now runs the full 960px rather than a 62ch measure, and type
+     set at the smaller size across that width gives a line long enough to lose
+     your place returning to. Larger type spends the extra width on the letters
+     instead of on the count. Scoped here, so prose everywhere else is untouched. */
+  --prose-size: 1.125rem;
 }
 
 .rich-text {
-  max-width: 68ch;
+  max-width: var(--measure-long);
   margin-inline: auto;
-  font-size: 1.0625rem;
+  font-size: var(--prose-size);
   line-height: 1.72;
+}
+
+/* The article body drops the measure entirely and takes its container's width,
+   which is the same 960px column the hero image sits in — so the prose starts
+   and ends on the picture's edges instead of being inset from them.
+
+   Scoped to .post-body on purpose: .rich-text is also the FAQ answer, which is
+   scanned rather than read. It keeps the 62ch column the rule above gives it. */
+.post-body .rich-text {
+  max-width: none;
 }
 
 .rich-text h2 {
@@ -3360,6 +5359,61 @@ strong {
 
 .rich-text h3 {
   margin-top: 2em;
+}
+
+/* ── Section breaks in an article body ─────────────────────────────────────
+   Space alone stops working at this column width. A reader coming down a
+   full-width page meets a heading with a paragraph above it and a paragraph
+   below it, all on the same left edge, and the only thing marking a new section
+   is a gap that a long paragraph can swallow. So the two heading levels get
+   marks of different weight, and the weight is the hierarchy:
+
+   h2 — a hairline across the whole column, the same width as the hero image.
+        This is a new section, and it reads as one before you read the words.
+   h3 — a short stroke, a few characters wide. This is a subsection of the
+        section you are already in, so it marks the break without claiming to
+        end anything.
+
+   :first-child on the h2 rule matters: an article whose body opens on a heading
+   would otherwise draw a line directly under the lede's own rule, giving two
+   hairlines with a sliver of nothing between them. */
+.post-body .rich-text h2 {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  padding-top: clamp(1.75rem, 3vw, 2.5rem);
+  border-top: 1px solid var(--line);
+}
+
+.post-body .rich-text h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* A size of its own, because the body under it grew. The global h3 is set
+   against the site's --prose-size; at the article's larger body size the step
+   between the two closed to about 1.2x, which is close enough that a subsection
+   heading stopped announcing itself as one. This reopens it. */
+.post-body .rich-text h3 {
+  margin-top: clamp(2.25rem, 4vw, 3rem);
+  font-size: clamp(1.25rem, 1.7vw, 1.5rem);
+}
+
+.post-body .rich-text h3::before {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  margin-bottom: 1rem;
+  border-top: 1px solid var(--line-strong);
+}
+
+/* A subsection opening its section: the h2's own rule is directly above, and a
+   second mark under it would read as a mistake rather than as a hierarchy. */
+.post-body .rich-text h2 + h3 {
+  margin-top: clamp(1.5rem, 2.5vw, 2rem);
+}
+
+.post-body .rich-text h2 + h3::before {
+  display: none;
 }
 
 .rich-text p {
@@ -3405,10 +5459,31 @@ strong {
   color: var(--ink-faint);
 }
 
+/* The frame owns the corner, not the image inside it.
+   This element paints --paper-alt as a decode placeholder and clips with
+   overflow, so it is the thing with a visible box. Putting the radius on the
+   <img> instead left the frame square underneath: at every corner a wedge of
+   --paper-alt showed between the image's curve and the frame's hard corner,
+   which read as four chips out of the picture. Worse, an ambient video renders
+   without a frame, so the same block came out clean for a video and chipped for
+   a still.
+
+   The rule, for anything added later: if the image fills its frame, round the
+   frame and leave the image square. Only when the image is narrower than its
+   frame (see .cs-media--framed) does the radius belong on the image, and then
+   the frame's background has to go transparent or the wedges come back. */
 .media-frame {
   width: 100%;
   background-color: var(--paper-alt);
   overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+/* Square again wherever the media runs to the viewport edge. */
+.cs-media--full .media-frame,
+.next-lead-media .media-frame,
+.device-mockup-screen .media-frame {
+  border-radius: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -3433,6 +5508,7 @@ strong {
   background-color: var(--tint);
 }
 
+/* Corner comes from the .media-frame wrapper, as everywhere else. */
 .journal-thumb img,
 .journal-thumb video {
   width: 100%;
@@ -3466,202 +5542,7 @@ strong {
 .journal-excerpt {
   font-size: 0.9375rem;
   margin: 0;
-  max-width: 60ch;
-}
-
-/* --------------------------------------------------------------------------
-   Gallery lightbox
-   -------------------------------------------------------------------------- */
-
-.gallery-open {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: zoom-in;
-}
-
-.gallery-open img,
-.gallery-open video {
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  background-color: var(--paper-alt);
-  transition: opacity var(--dur) var(--ease);
-}
-
-.gallery-open:hover img,
-.gallery-open:hover video {
-  opacity: 0.86;
-}
-
-.gallery-caption {
-  padding-top: 0.85rem;
-  font-size: 0.8125rem;
-  color: var(--ink-faint);
-  margin: 0;
-}
-
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--forest-deep);
-  color: var(--on-dark);
-  padding: 1.25rem clamp(1.25rem, 3vw, 2.5rem);
-  gap: 1.25rem;
-}
-
-.lightbox-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.6875rem;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--on-dark-faint);
-}
-
-.lightbox-close {
-  font-family: var(--font-text);
-  font-size: 0.6875rem;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--on-dark);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--line-dark);
-  padding: 0 0 0.25rem;
-  cursor: pointer;
-  transition: border-color var(--dur) var(--ease);
-}
-
-.lightbox-close:hover {
-  border-bottom-color: var(--on-dark);
-}
-
-.lightbox-main {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 20rem;
-  gap: clamp(1.5rem, 3vw, 3rem);
-}
-
-.lightbox-stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-}
-
-.lightbox-stage img,
-.lightbox-stage video {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.lightbox-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow-y: auto;
-}
-
-.lightbox-title {
-  font-size: 1.25rem;
-  letter-spacing: -0.012em;
-  color: var(--on-dark);
-  margin: 0;
-}
-
-.lightbox-desc {
-  font-size: 0.9375rem;
-  color: var(--on-dark-muted);
-  margin: 0;
-}
-
-.lightbox-meta {
-  display: grid;
-  gap: 0.85rem;
-  margin: 0;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--line-dark);
-}
-
-.lightbox-meta dt {
-  font-size: 0.6875rem;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--on-dark-faint);
-  margin-bottom: 0.2rem;
-}
-
-.lightbox-meta dd {
-  margin: 0;
-  font-size: 0.9375rem;
-  color: var(--on-dark-muted);
-}
-
-.lightbox-navrow {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: auto;
-  padding-top: 1.5rem;
-}
-
-.lightbox-nav {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.25rem;
-  height: 2.5rem;
-  background: none;
-  border: 1px solid var(--line-dark);
-  color: var(--on-dark);
-  cursor: pointer;
-  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-
-.lightbox-nav:hover {
-  border-color: var(--on-dark);
-  background-color: rgba(241, 240, 233, 0.06);
-}
-
-.lightbox-thumbs {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line-dark);
-}
-
-.lightbox-thumb {
-  flex: 0 0 auto;
-  width: 5rem;
-  height: 3.5rem;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  opacity: 0.4;
-  transition: opacity var(--dur) var(--ease);
-}
-
-.lightbox-thumb img,
-.lightbox-thumb video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.lightbox-thumb:hover,
-.lightbox-thumb.is-active {
-  opacity: 1;
+  max-width: var(--measure);
 }
 
 /* --------------------------------------------------------------------------
@@ -3841,7 +5722,6 @@ strong {
   gap: 0.75rem;
 }
 
-/* light-surface twin of .lightbox-nav */
 .testimonial-nav {
   display: inline-flex;
   align-items: center;
@@ -3862,155 +5742,6 @@ strong {
   border-color: var(--ink);
   color: var(--ink);
   background-color: var(--tint);
-}
-
-/* --------------------------------------------------------------------------
-   Comments
-   -------------------------------------------------------------------------- */
-
-.comments {
-  display: grid;
-  gap: clamp(2rem, 4vw, 3rem);
-  max-width: 68ch;
-}
-
-.comment-list {
-  display: grid;
-  gap: 0;
-  border-top: 1px solid var(--line);
-}
-
-.comment {
-  padding-block: 1.5rem;
-  border-bottom: 1px solid var(--line);
-}
-
-.comment-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem 1rem;
-  margin-bottom: 0.6rem;
-}
-
-.comment-name {
-  font-size: 0.9375rem;
-  color: var(--ink);
-  margin: 0;
-}
-
-.comment-head time {
-  font-size: 0.75rem;
-  color: var(--ink-faint);
-}
-
-.comment-body {
-  font-size: 0.9375rem;
-  margin: 0 0 0.75rem;
-}
-
-.comment-foot {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.comment-like {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-family: var(--font-text);
-  font-size: 0.8125rem;
-  color: var(--ink-faint);
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  transition: color var(--dur) var(--ease);
-}
-
-.comment-like:hover {
-  color: var(--ink);
-}
-
-.comment-like .heart-icon {
-  width: 1rem;
-  height: 1rem;
-}
-
-.comment-like.is-liked {
-  color: var(--ink);
-}
-
-.comment-like.is-liked .heart-icon {
-  fill: currentColor;
-}
-
-.comments-empty {
-  font-size: 0.9375rem;
-  color: var(--ink-faint);
-}
-
-.comment-form {
-  display: grid;
-  gap: 1.5rem;
-  padding-top: clamp(1.5rem, 3vw, 2.5rem);
-  border-top: 1px solid var(--line);
-}
-
-.comment-form-title {
-  font-size: 1.15rem;
-  margin: 0;
-}
-
-.comment-form-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-
-.comment-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.comment-field label {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-.comment-field input,
-.comment-field textarea {
-  font-family: var(--font-text);
-  font-size: 1rem;
-  color: var(--ink);
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--line-strong);
-  border-radius: 0;
-  padding: 0.65rem 0;
-  transition: border-color var(--dur) var(--ease);
-}
-
-.comment-field input:focus,
-.comment-field textarea:focus {
-  outline: none;
-  border-bottom-color: var(--ink);
-}
-
-.comment-form button {
-  justify-self: start;
-}
-
-.comment-form-note {
-  font-size: 0.8125rem;
-  color: var(--ink-faint);
-  margin: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -4077,12 +5808,10 @@ strong {
   outline-offset: 3px;
 }
 
-.section-dark :where(a, button):focus-visible,
-.lightbox :where(a, button):focus-visible {
+.section-dark :where(a, button):focus-visible {
   outline-color: var(--on-dark);
 }
 
-html.lightbox-open,
 html.is-scroll-locked {
   overflow: hidden;
 }
@@ -4092,13 +5821,14 @@ html.is-scroll-locked {
    opened from partway down the page. Pin it for the length of the lock, and
    give the flow back the height it stops taking up so the page behind the
    panel doesn't jump. */
-html.lightbox-open .site-header,
 html.is-scroll-locked .site-header {
   position: fixed;
   inset-inline: 0;
+  /* and un-retract it: the panel can be opened from anywhere on the page,
+     including partway through a downward scroll with the bar already gone */
+  transform: none;
 }
 
-html.lightbox-open body,
 html.is-scroll-locked body {
   padding-top: var(--header-h);
 }
@@ -4172,18 +5902,19 @@ html.is-scroll-locked body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .lightbox-main {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
-  }
-
-  .lightbox-info {
-    max-height: 34vh;
-  }
 }
 
 @media (max-width: 768px) {
-  .site-nav {
+  :root {
+    --header-h: 3.75rem;
+  }
+
+  /* The CTA leaves with the links rather than staying: the open menu carries
+     its own full-width copy, and two "Start a project" buttons a thumb apart
+     is one too many. */
+  .site-nav,
+  .header-divider,
+  .nav-cta {
     display: none;
   }
 
@@ -4191,15 +5922,54 @@ html.is-scroll-locked body {
     display: inline-flex;
   }
 
-  /* only exists below this breakpoint — hidden state is visibility, not display,
+  /* only exist below this breakpoint — hidden state is visibility, not display,
      so the close transition still runs */
   .mobile-nav {
     display: flex;
   }
 
+  .mobile-nav-scrim {
+    display: block;
+  }
+
   .section-head {
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
+  }
+
+  /* Stacked, this is a row rather than a link sitting beside a heading.
+
+     It was shrunk to its content for a while, which fixed an earlier problem —
+     a full-width underline with the label and arrow both bunched at the left
+     read as a stray rule with some words on it — but created a worse one. A
+     short rule under the label landed a few rem above the rule that opens the
+     list below it, so "All services" arrived as two hairlines stacked in the
+     same column, and two rules that close to each other read as an accident.
+
+     So: full width, with the arrow pushed to the far edge. That answers the
+     original objection, because the rule now has the label at one end and the
+     arrow at the other rather than an unlit gap, and it gives the whole row as
+     the hit area. The section below drops its own border-top, since this rule
+     is now the line that divides them. One rule doing one job. */
+  .section-head .link-arrow {
+    justify-self: stretch;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .section-head:has(.link-arrow)+.services-index {
+    border-top: 0;
+  }
+
+  /* Touch target. The label is 12px type over a hairline, which is about 22px
+     of tappable height — under the 44px a thumb expects. Growing the padding
+     would push the underline away from the text it belongs to, so the hit area
+     is extended invisibly instead. ::after is the hover sweep; ::before is free. */
+  .section-head .link-arrow::before {
+    content: '';
+    position: absolute;
+    inset: -0.75rem -0.5rem;
   }
 
   .hero-index {
@@ -4249,8 +6019,7 @@ html.is-scroll-locked body {
     max-width: none;
   }
 
-  .form-row,
-  .comment-form-row {
+  .form-row {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -4269,10 +6038,6 @@ html.is-scroll-locked body {
   .footer-grid {
     grid-template-columns: minmax(0, 1fr);
   }
-
-  .lightbox-thumbs {
-    display: none;
-  }
 }
 
 /* --------------------------------------------------------------------------
@@ -4290,7 +6055,7 @@ html.is-scroll-locked body {
    layout.tsx, and only exists once someone has actually used the toggle.
    Without JavaScript it is never set, and the OS keeps deciding.
 
-   The forest panels (.section-dark, the footer, the lightbox) stay green in
+   The forest panels (.section-dark, the footer, the slide panel) stay green in
    both schemes. In light they sit darker than the page; in dark they sit
    slightly lighter than it, so they still read as a separate surface rather
    than merging into the background.
@@ -4391,4 +6156,504 @@ html.is-scroll-locked body {
 
 .preview-banner a:hover {
   opacity: 0.78;
+}
+
+/* --------------------------------------------------------------------------
+   Newsroom (Danelec Style)
+   -------------------------------------------------------------------------- */
+
+/* The featured post gets the tinted ground and the feed below it keeps paper,
+   so the two read as separate registers rather than as one long list whose
+   first item happens to be bigger.
+
+   Tinted rather than forest, for one specific reason: this is the top of the
+   page, and .site-header is transparent until the reader scrolls. Ink-coloured
+   header type over a forest band would be unreadable for exactly as long as the
+   page sits at scroll 0. The band therefore takes the other ground the site
+   already has — the same one the home page and services use to break a run of
+   sections.
+
+   The section wraps a .container rather than being one, so the ground runs to
+   both screen edges without needing the box-shadow trick .section-dark.container
+   carries. */
+/* Rises the height of the header, so the bar sits on this ground instead of on
+   a strip of page above it.
+
+   The header is transparent until it pins (see .site-header), so at the top of
+   a route it shows whatever is behind it. On every other page that is --paper
+   and there is nothing to notice. Here the first section is --paper-alt, so the
+   header showed a band of the lighter paper and drew a hard seam straight
+   across the top of the newsroom. Nothing about the arrangement below changes:
+   the height comes off the top as margin and goes straight back on as padding,
+   so the featured post keeps its spacing and gains a little more. */
+.newsroom-hero {
+  background-color: var(--paper-alt);
+  margin-top: calc(var(--header-h) * -1);
+  padding-block: calc(var(--header-h) + clamp(3rem, 6vw, 5rem)) clamp(3rem, 6vw, 5.5rem);
+}
+
+/* Kind and date, to the right of the lime Featured chip. The middot only ever
+   sits between the two grey items — the chip is separated by its own fill. */
+.featured-kind + .featured-date::before {
+  content: '·';
+  margin-right: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.newsroom-featured {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: clamp(2.5rem, 6vw, 6rem);
+  align-items: center;
+}
+
+.featured-content {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  text-align: left;
+}
+
+.featured-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 1.25rem;
+}
+
+.featured-tag {
+  background-color: var(--signal);
+  color: var(--signal-ink);
+  padding: 0.42em 0.85em 0.38em;
+  border-radius: var(--radius-btn);
+  font-weight: 500;
+  font-size: 0.6875rem;
+  letter-spacing: 0.13em;
+  line-height: 1;
+}
+
+.featured-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.featured-excerpt {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  margin-bottom: 2rem;
+  max-width: 50ch;
+}
+
+.featured-media-wrapper {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--paper-alt);
+}
+
+.featured-media-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur) var(--ease);
+}
+
+.featured-media-wrapper:hover img {
+  transform: scale(1.02);
+}
+
+/* Topic filter bar. No border-top: the tinted band above it already ends in an
+   edge, and a hairline on top of that reads as a double rule. */
+.newsroom-topics {
+  padding-block: clamp(2.5rem, 5vw, 3.5rem) 2.5rem;
+}
+
+.topics-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.topics-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.topics-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.018em;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Filter, sort, and how much of the result is on screen.
+
+   This was a row of pills, one per topic. Pills are a good control while they
+   fit on a line and a bad one the moment they do not: at twenty topics they
+   wrap three deep and push the feed they are filtering off the screen. Two menus
+   are the same size whatever the taxonomy does. */
+/* Shared by the newsroom and the work index, hence the neutral name: both pages
+   filter a grid, and a reader who has used one should not have to learn the
+   other. The newsroom adds a sort menu to the same row; work has nothing to
+   sort by, so it carries the filter alone. */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+  width: 100%;
+}
+
+/* Standalone above the grid rather than inside a section head, so it brings its
+   own room underneath. */
+.work-filter {
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+}
+
+/* Pushed to the far end, so the controls read as a pair and the tally reads
+   as the result of them rather than a third control. */
+.filter-bar-count {
+  margin: 0 0 0 auto;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 560px) {
+  .filter-bar-count {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.filter-menu {
+  position: relative;
+}
+
+/* The same pill the topic chips were, now carrying an icon and a value instead
+   of being one of twenty. */
+.filter-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 9999px;
+  border: 1px solid var(--line-strong);
+  background-color: transparent;
+  font-family: var(--font-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition:
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.filter-menu-button:hover,
+.filter-menu-button[aria-expanded='true'] {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.filter-menu-label {
+  white-space: nowrap;
+}
+
+/* The icons are the smallest text on the page and the first thing scanned, so
+   they hold full ink while the label beside them stays muted. */
+.filter-menu-button .control-icon {
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.filter-menu-button .chevron-icon {
+  transition: transform var(--dur) var(--ease);
+}
+
+.filter-menu-button[aria-expanded='true'] .chevron-icon {
+  transform: rotate(180deg);
+}
+
+/* Above the cards, which are the only thing it can ever overlap. */
+.filter-menu-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  min-width: 100%;
+  max-width: min(20rem, calc(100vw - 2 * var(--gutter)));
+  max-height: min(24rem, 60vh);
+  overflow-y: auto;
+  padding: 0.375rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background-color: var(--paper);
+  box-shadow: 0 12px 32px light-dark(rgba(15, 45, 43, 0.12), rgba(0, 0, 0, 0.45));
+}
+
+.filter-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 0;
+  border-radius: 6px;
+  background-color: transparent;
+  font-family: var(--font-text);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition:
+    color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.filter-menu-item:hover,
+.filter-menu-item:focus-visible {
+  background-color: var(--tint);
+  color: var(--ink);
+}
+
+.filter-menu-item[aria-checked='true'] {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* Reserved whether or not the tick is there, so choosing a row does not shunt
+   every label in the menu sideways. */
+.filter-menu-item-check {
+  display: inline-flex;
+  justify-content: center;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.filter-menu-item-label {
+  flex-grow: 1;
+}
+
+/* How many posts the row would leave on screen — what stops the menu offering
+   a choice that comes back empty. Fixed width and right-aligned so 1 and 101
+   share an edge rather than each sitting wherever its own width leaves it. */
+.filter-menu-item-count {
+  flex-shrink: 0;
+  min-width: 2ch;
+  text-align: right;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+
+/* Load more. A disclosure rather than a pager: the cards are already here, and
+   the button is what lets the reader decide how much of the page exists. */
+.newsroom-more {
+  display: flex;
+  justify-content: center;
+  padding-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.newsroom-more-count {
+  margin-left: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.62;
+}
+
+/* Card Feed Grid */
+.newsroom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3.5rem 2rem;
+  padding-top: 2rem;
+}
+
+.news-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  background-color: transparent;
+  transition: transform var(--dur) var(--ease);
+}
+
+.news-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--paper-alt);
+  margin-bottom: 1.25rem;
+}
+
+.news-card-featured-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 5;
+  background-color: var(--signal);
+  color: var(--signal-ink);
+  padding: 0.42em 0.85em 0.38em;
+  border-radius: var(--radius-btn);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  line-height: 1;
+}
+
+.news-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur) var(--ease);
+}
+
+.news-card:hover .news-card-image img {
+  transform: scale(1.02);
+}
+
+.news-card-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.news-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.75rem;
+}
+
+/* .news-card-tag is styled with .work-card-tag up in the work-card section —
+   they are one chip, and keeping one copy here is what let the two drift. */
+
+.news-card-title {
+  position: relative;
+  display: inline-block;
+  align-self: start;
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--line);
+}
+
+.news-card-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0;
+  height: 1px;
+  background-color: var(--ink);
+  transition: width 0.24s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.news-card:hover .news-card-title::after {
+  width: 100%;
+}
+
+/* Mobile responsive newsroom */
+@media (max-width: 900px) {
+  .newsroom-featured {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .newsroom-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3rem 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .newsroom-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
+/* Detail Post centered containers matching 960px column */
+.post-media-container {
+  width: 100%;
+  max-width: 960px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+}
+
+.post-media-container .media-frame {
+  width: 100%;
+  height: auto;
+}
+
+.post-media-container .media-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.post-body {
+  width: 100%;
+  max-width: 960px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  padding-bottom: var(--section-y);
+}
+
+/* "Explore related" under an article. The body above it runs at a 960px
+   measure; this returns to the full container so the three cards are the same
+   size here as on the index, which is the point of sharing the card at all.
+   The rule marks where the article ends and the grid begins. */
+.post-related {
+  border-top: 1px solid var(--line);
+  /* .post-body already puts a full --section-y above the rule. A second one
+     under it would leave the heading floating in the middle of nothing, so this
+     half-step is what separates the rule from "Explore related". */
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* .newsroom-grid carries its own padding-top for the index, where it follows
+   the filter tabs directly. Here the section head already supplies that gap. */
+.post-related .newsroom-grid {
+  padding-top: 0;
 }

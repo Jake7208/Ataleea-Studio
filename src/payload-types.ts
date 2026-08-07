@@ -75,7 +75,7 @@ export interface Config {
     testimonials: Testimonial;
     faqs: Faq;
     'contact-submissions': ContactSubmission;
-    comments: Comment;
+    subscribers: Subscriber;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -91,7 +91,7 @@ export interface Config {
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
-    comments: CommentsSelect<false> | CommentsSelect<true>;
+    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -167,7 +167,7 @@ export interface User {
   collection: 'users';
 }
 /**
- * Every image and video on the site lives here. Upload once, then point a case study, journal post or page slot at it.
+ * Every image and video on the site lives here. Upload once, then point a case study, newsroom post or page slot at it.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
@@ -178,22 +178,6 @@ export interface Media {
    * What the picture shows, in a sentence — read aloud by screen readers and shown if the file fails to load.
    */
   alt: string;
-  /**
-   * Tagged images appear in the site gallery, filterable by tag.
-   */
-  tags?: (string | Tag)[] | null;
-  /**
-   * The most recently updated featured photo fills the full-width gallery band on the homepage.
-   */
-  featured?: boolean | null;
-  /**
-   * Shown next to the image in the gallery lightbox.
-   */
-  description?: string | null;
-  /**
-   * When the photo was taken — shown in the gallery lightbox.
-   */
-  dateTaken?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -242,16 +226,6 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags".
- */
-export interface Tag {
-  id: string;
-  name: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "case-studies".
  */
 export interface CaseStudy {
@@ -285,7 +259,14 @@ export interface CaseStudy {
    * Adds a “Visit the site” button to the header. Leave blank if the site is not public yet.
    */
   liveUrl?: string | null;
+  /**
+   * A composed cover, not a raw screenshot: the site artwork placed on a background, exported at 1600 × 1200 (4:3). Used on the work grid, the home page and the social card, never inside the study itself. The row only stays even because every cover shares the same canvas and the same margins, so vary the background between projects and never the framing.
+   */
   mainMedia?: (string | null) | Media;
+  /**
+   * The image the study itself opens with, under the title. It runs full width at its own proportions and is never cropped, so any shape works — this is where the wide establishing shot goes, the one the 4:3 cover has no room for. Leave it empty and the cover stands in.
+   */
+  heroMedia?: (string | null) | Media;
   content?:
     | (
         | {
@@ -460,7 +441,11 @@ export interface CaseStudy {
              */
             fit?: ('natural' | 'crop') | null;
             /**
-             * Optional — describes the row as a whole.
+             * Paints a panel behind the row. Device shots are mostly pale UI and sit flat on cream, so a tint is usually what makes them read as objects on a surface rather than as holes in the page. Tinted uses the accent colour set at the foot of this study, or the soft grey if none is set. A row set to the same tone as the section directly above it shares one panel with it, rather than starting a second.
+             */
+            tone?: ('default' | 'tinted' | 'dark') | null;
+            /**
+             * Optional. Describes the row as a whole.
              */
             caption?: string | null;
             id?: string | null;
@@ -472,6 +457,18 @@ export interface CaseStudy {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Subjects. A newsroom post’s topics become the filter tabs on /newsroom.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: string;
+  name: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -489,6 +486,13 @@ export interface Blog {
    * Shown as “Written by …” on the post.
    */
   author?: string | null;
+  /**
+   * The label on the card and above the headline.
+   */
+  kind: 'article' | 'news' | 'press-release';
+  /**
+   * Subjects the post covers. These are the filter tabs on the newsroom.
+   */
   tags?: (string | Tag)[] | null;
   /**
    * Short teaser shown on cards and used as the SEO description.
@@ -601,45 +605,23 @@ export interface ContactSubmission {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "comments".
+ * via the `definition` "subscribers".
  */
-export interface Comment {
+export interface Subscriber {
   id: string;
-  /**
-   * The journal post or case study this comment belongs to.
-   */
-  post:
-    | {
-        relationTo: 'blog';
-        value: string | Blog;
-      }
-    | {
-        relationTo: 'case-studies';
-        value: string | CaseStudy;
-      };
-  name: string;
-  /**
-   * Never shown publicly — only used to identify the commenter.
-   */
   email: string;
-  body: string;
   /**
-   * Comments stay hidden until this is checked.
+   * Set to Unsubscribed rather than deleting the record, so the address is not silently re-added by a later import.
    */
-  approved?: boolean | null;
+  status: 'subscribed' | 'unsubscribed';
   /**
-   * How many readers liked this comment.
+   * Where the sign-up came from.
    */
-  likes?: number | null;
-  voters?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  source?: string | null;
+  /**
+   * When consent was given. Kept as the record of it.
+   */
+  subscribedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -700,8 +682,8 @@ export interface PayloadLockedDocument {
         value: string | ContactSubmission;
       } | null)
     | ({
-        relationTo: 'comments';
-        value: string | Comment;
+        relationTo: 'subscribers';
+        value: string | Subscriber;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -774,10 +756,6 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
-  tags?: T;
-  featured?: T;
-  description?: T;
-  dateTaken?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -857,6 +835,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   year?: T;
   liveUrl?: T;
   mainMedia?: T;
+  heroMedia?: T;
   content?:
     | T
     | {
@@ -963,6 +942,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
                     id?: T;
                   };
               fit?: T;
+              tone?: T;
               caption?: T;
               id?: T;
               blockName?: T;
@@ -981,6 +961,7 @@ export interface BlogSelect<T extends boolean = true> {
   slug?: T;
   publishedAt?: T;
   author?: T;
+  kind?: T;
   tags?: T;
   excerpt?: T;
   mainMedia?: T;
@@ -1040,16 +1021,13 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "comments_select".
+ * via the `definition` "subscribers_select".
  */
-export interface CommentsSelect<T extends boolean = true> {
-  post?: T;
-  name?: T;
+export interface SubscribersSelect<T extends boolean = true> {
   email?: T;
-  body?: T;
-  approved?: T;
-  likes?: T;
-  voters?: T;
+  status?: T;
+  source?: T;
+  subscribedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1103,17 +1081,13 @@ export interface SiteMedia {
   id: string;
   home?: {
     /**
-     * One finished project, wide. Building in full, shot straight on in good light. Sits full-bleed under the headline, so keep the subject off the extreme edges.
+     * One finished site on screen. A device mockup, or the design itself framed full width. Export 2560 × 1280. This slot crops from the centre outwards and goes near-portrait on a phone, so keep the subject inside the middle 40% and leave air on every edge.
      */
     hero?: (string | null) | Media;
     /**
-     * Close crop on craft: a material joint, a hand at work, a finished edge. Tall — it fills a portrait column beside the “most construction websites…” copy.
+     * Close crop on craft: a typographic detail, a grid at rest, one component enlarged. Tall, so export 1800 × 2250. It fills a portrait column beside the “most portfolio sites…” copy.
      */
     statement?: (string | null) | Media;
-    /**
-     * Edge-to-edge site or interior shot. Wide, quiet, no text overlay. A visual pause between the work grid and the testimonials.
-     */
-    band?: (string | null) | Media;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1128,7 +1102,6 @@ export interface SiteMediaSelect<T extends boolean = true> {
     | {
         hero?: T;
         statement?: T;
-        band?: T;
       };
   updatedAt?: T;
   createdAt?: T;

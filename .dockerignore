@@ -1,0 +1,30 @@
+# Build context exclusions.
+#
+# node_modules matters most: the Dockerfile installs it in the `deps` stage and
+# copies it in, and without this line the `COPY . .` right after would bury that
+# under whatever is on the host — including native binaries built for the wrong
+# platform, which is a confusing way to find out.
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output. The image builds its own; copying a local one in also carries
+# .next/dev/lock, which the prebuild guard would refuse to build over.
+.next
+.next-local
+out
+
+# Not part of a build
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+README.md
+.screenshots
+media
+
+# .env is deliberately NOT excluded. NEXT_PUBLIC_* values are inlined at build
+# time, so NEXT_PUBLIC_SITE_URL has to be readable during `next build` or the
+# sitemap and share cards ship pointing at localhost.

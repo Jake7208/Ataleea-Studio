@@ -16,7 +16,7 @@ import { Tags } from './collections/Tags'
 import { Testimonials } from './collections/Testimonials'
 import { Faqs } from './collections/Faqs'
 import { ContactSubmissions } from './collections/ContactSubmissions'
-import { Comments } from './collections/Comments'
+import { Subscribers } from './collections/Subscribers'
 import { SiteMedia } from './globals/SiteMedia'
 
 const filename = fileURLToPath(import.meta.url)
@@ -73,7 +73,7 @@ export default buildConfig({
     Testimonials,
     Faqs,
     ContactSubmissions,
-    Comments,
+    Subscribers,
   ],
   globals: [SiteMedia],
   editor: lexicalEditor(),

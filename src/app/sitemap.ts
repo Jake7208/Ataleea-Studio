@@ -15,8 +15,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Entry['c
     { path: '/services', priority: 0.9, changeFrequency: 'monthly' },
     { path: '/work', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/about', priority: 0.7, changeFrequency: 'yearly' },
-    { path: '/blog', priority: 0.7, changeFrequency: 'weekly' },
-    { path: '/gallery', priority: 0.5, changeFrequency: 'monthly' },
+    { path: '/newsroom', priority: 0.7, changeFrequency: 'weekly' },
   ]
 
 /**
@@ -60,7 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const [section, res] of [
       ['work', caseStudies],
-      ['blog', posts],
+      ['newsroom', posts],
     ] as const) {
       for (const doc of res.docs) {
         if (!doc.slug) continue

@@ -35,10 +35,10 @@ export const SiteMedia: GlobalConfig = {
           name: 'hero',
           type: 'upload',
           relationTo: 'media',
-          label: 'Hero — establishing shot',
+          label: 'Hero — lead project',
           admin: {
             description:
-              'One finished project, wide. Building in full, shot straight on in good light. Sits full-bleed under the headline, so keep the subject off the extreme edges.',
+              'One finished site on screen. A device mockup, or the design itself framed full width. Export 2560 × 1280. This slot crops from the centre outwards and goes near-portrait on a phone, so keep the subject inside the middle 40% and leave air on every edge.',
           },
         },
         {
@@ -48,17 +48,7 @@ export const SiteMedia: GlobalConfig = {
           label: 'Approach — detail',
           admin: {
             description:
-              'Close crop on craft: a material joint, a hand at work, a finished edge. Tall — it fills a portrait column beside the “most construction websites…” copy.',
-          },
-        },
-        {
-          name: 'band',
-          type: 'upload',
-          relationTo: 'media',
-          label: 'Band — atmosphere',
-          admin: {
-            description:
-              'Edge-to-edge site or interior shot. Wide, quiet, no text overlay. A visual pause between the work grid and the testimonials.',
+              'Close crop on craft: a typographic detail, a grid at rest, one component enlarged. Tall, so export 1800 × 2250. It fills a portrait column beside the “most portfolio sites…” copy.',
           },
         },
       ],

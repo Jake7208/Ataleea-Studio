@@ -101,7 +101,10 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
  * panel instead of sitting on two with a seam between.
  */
 export default function ArticleBody({ post }: ArticleBodyProps) {
-  const hero = mediaInfo(post.mainMedia)
+  // The cover is composed to a 4:3 canvas for the work grid, which is the wrong
+  // shape to open a study with. `heroMedia` is the study's own opening image;
+  // falling back to the cover keeps every study that predates the split working.
+  const hero = mediaInfo(post.heroMedia) ?? mediaInfo(post.mainMedia)
   const liveUrl = safeUrl(post.liveUrl)
   const tags = (post.tags ?? []).filter(
     (t): t is Exclude<typeof t, string> => typeof t !== 'string',
@@ -204,12 +207,18 @@ export default function ArticleBody({ post }: ArticleBodyProps) {
 
 /**
  * The tone a block paints behind itself, or null for one that sits straight on
- * the page. Media is always null: a full-bleed image is its own break and a
- * band behind it would only show as a stripe above and below.
+ * the page.
+ *
+ * Full-bleed media stays out of this: it is its own break, and a band behind it
+ * could only show as a stripe above and below. An image row is the exception,
+ * because it sits inside the container with page either side of it — which is
+ * exactly where a panel has somewhere to show, and what device shots need to
+ * stop reading as holes in the cream.
  */
 type Tone = 'tinted' | 'dark' | null
+const TONED = new Set(['section', 'statement', 'gallery'])
 const toneOf = (block: { blockType: string; tone?: string | null }): Tone => {
-  if (block.blockType !== 'section' && block.blockType !== 'statement') return null
+  if (!TONED.has(block.blockType)) return null
   return block.tone === 'tinted' ? 'tinted' : block.tone === 'dark' ? 'dark' : null
 }
 

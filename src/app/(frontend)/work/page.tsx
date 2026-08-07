@@ -4,6 +4,7 @@ import React from 'react'
 
 import config from '@/payload.config'
 import WorkIndex from '@/components/WorkIndex'
+import { reveal } from '@/lib/reveal'
 
 // statically rendered, refreshed in the background at most once a minute
 export const revalidate = 60
@@ -11,7 +12,7 @@ export const revalidate = 60
 export const metadata: Metadata = {
   title: 'Work',
   description:
-    'Selected projects: websites and local search for construction companies and the trades around them.',
+    'Selected projects: websites for people with work worth showing. Portfolios, practices and independent businesses.',
 }
 
 export default async function WorkPage() {
@@ -30,7 +31,7 @@ export default async function WorkPage() {
   return (
     <>
       <section className="page-intro container">
-        <div data-reveal>
+        <div {...reveal}>
           <p className="eyebrow">Work / {totalDocs}</p>
           <h1>Projects built to be looked at.</h1>
         </div>

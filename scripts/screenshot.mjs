@@ -19,8 +19,9 @@ const routes = process.env.ROUTES
   : [
       ['home', '/'],
       ['work', '/work'],
-      ['journal', '/blog'],
-      ['gallery', '/gallery'],
+      ['services', '/services'],
+      ['about', '/about'],
+      ['newsroom', '/newsroom'],
     ]
 
 const viewports = [
@@ -62,8 +63,8 @@ async function shoot(browser, label, width, height) {
     })
     if (revealed === 0) problems.push(`[${label}] ${route} has no [data-reveal] targets`)
 
-    // longest stagger delay (0.21s) plus the 0.3s transition, with headroom
-    await page.waitForTimeout(700)
+    // longest stagger delay (0.4s) plus the 0.7s reveal transition, with headroom
+    await page.waitForTimeout(1400)
 
     // web fonts load async — without this the shot captures fallback metrics
     await page.evaluate(() => document.fonts.ready)

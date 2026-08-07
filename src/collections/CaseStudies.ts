@@ -164,7 +164,21 @@ export const CaseStudies: CollectionConfig = {
       name: 'mainMedia',
       type: 'upload',
       relationTo: 'media',
-      label: 'Main Image / Video',
+      label: 'Cover',
+      admin: {
+        description:
+          'A composed cover, not a raw screenshot: the site artwork placed on a background, exported at 1600 × 1200 (4:3). Used on the work grid, the home page and the social card, never inside the study itself. The row only stays even because every cover shares the same canvas and the same margins, so vary the background between projects and never the framing.',
+      },
+    },
+    {
+      name: 'heroMedia',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Hero',
+      admin: {
+        description:
+          'The image the study itself opens with, under the title. It runs full width at its own proportions and is never cropped, so any shape works — this is where the wide establishing shot goes, the one the 4:3 cover has no room for. Leave it empty and the cover stands in.',
+      },
     },
     {
       name: 'content',
@@ -645,10 +659,24 @@ export const CaseStudies: CollectionConfig = {
               },
             },
             {
+              name: 'tone',
+              type: 'select',
+              defaultValue: 'default',
+              options: [
+                { label: 'Plain, sits on the page', value: 'default' },
+                { label: 'Tinted panel', value: 'tinted' },
+                { label: 'Dark panel', value: 'dark' },
+              ],
+              admin: {
+                description:
+                  'Paints a panel behind the row. Device shots are mostly pale UI and sit flat on cream, so a tint is usually what makes them read as objects on a surface rather than as holes in the page. Tinted uses the accent colour set at the foot of this study, or the soft grey if none is set. A row set to the same tone as the section directly above it shares one panel with it, rather than starting a second.',
+              },
+            },
+            {
               name: 'caption',
               type: 'text',
               admin: {
-                description: 'Optional — describes the row as a whole.',
+                description: 'Optional. Describes the row as a whole.',
               },
             },
           ],

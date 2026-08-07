@@ -3,7 +3,7 @@ import { ImageResponse } from 'next/og'
 import { siteConfig } from '@/site.config'
 
 // Applies to every route in this group unless a page ships its own.
-export const alt = `${siteConfig.name} — websites for construction companies and the trades`
+export const alt = `${siteConfig.name}, websites for work worth showing`
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -48,7 +48,7 @@ export default function OpengraphImage() {
               maxWidth: 900,
             }}
           >
-            Digital presence for people who build things.
+            Digital presence for work worth showing.
           </div>
         </div>
 
@@ -73,7 +73,7 @@ export default function OpengraphImage() {
               maxWidth: 820,
             }}
           >
-            Websites and local search for construction companies and the trades around them.
+            Websites for people with work worth showing.
           </div>
         </div>
       </div>

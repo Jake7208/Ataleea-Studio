@@ -21,14 +21,14 @@ export const Blog: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', '_status', 'publishedAt', 'updatedAt'],
     group: 'Content',
-    preview: previewFor('/blog'),
+    preview: previewFor('/newsroom'),
   },
   versions: {
     drafts: {
       autosave: true,
     },
   },
-  hooks: revalidateFor({ paths: ['/blog'], detail: (slug) => `/blog/${slug}` }),
+  hooks: revalidateFor({ paths: ['/newsroom'], detail: (slug) => `/newsroom/${slug}` }),
   access: {
     // the public only sees published posts; logged-in users see everything
     read: ({ req }) => {
@@ -80,13 +80,37 @@ export const Blog: CollectionConfig = {
       },
     },
     {
+      // What the post IS. Prints on the card chip and above the headline, and
+      // it is a property of the post rather than something read out of the tag
+      // list — see the note in lib/news.ts for what that inference cost.
+      name: 'kind',
+      type: 'select',
+      label: 'Type',
+      options: [
+        { label: 'Article', value: 'article' },
+        { label: 'News', value: 'news' },
+        { label: 'Press release', value: 'press-release' },
+      ],
+      defaultValue: 'article',
+      required: true,
+      admin: {
+        position: 'sidebar',
+        description: 'The label on the card and above the headline.',
+      },
+    },
+    {
+      // What the post is ABOUT. Drives the filter on the newsroom index, which
+      // lists only the topics that published posts actually carry — this
+      // collection is shared with case studies and the media library, and their
+      // tags have no business in a news filter.
       name: 'tags',
       type: 'relationship',
       relationTo: 'tags',
       hasMany: true,
-      label: 'Categories',
+      label: 'Topics',
       admin: {
         position: 'sidebar',
+        description: 'Subjects the post covers. These are the filter tabs on the newsroom.',
       },
     },
     {

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import React from 'react'
 
 import { siteConfig } from '@/site.config'
+import { reveal } from '@/lib/reveal'
 
 export const metadata: Metadata = {
   title: 'Privacy',
@@ -15,9 +16,9 @@ export const metadata: Metadata = {
  * Written against what the site actually does rather than from a template.
  *
  * Every claim below is checkable in the code: the fields are the ones declared
- * on the ContactSubmissions and Comments collections, the hashing claim is the
- * voterFingerprint helper in Comments.ts, and the "no analytics" claim holds as
- * long as nothing is added to layout.tsx. If any of those change, this changes.
+ * on the ContactSubmissions and Subscribers collections, and the "no analytics"
+ * claim holds as long as nothing is added to layout.tsx. If any of those
+ * change, this changes.
  */
 const UPDATED = 'August 5, 2026'
 
@@ -25,7 +26,7 @@ export default function PrivacyPage() {
   return (
     <>
       <section className="page-intro container">
-        <div data-reveal>
+        <div {...reveal}>
           <p className="eyebrow">Privacy</p>
           <h1>What this site collects.</h1>
           <p className="page-intro-lead">
@@ -49,22 +50,16 @@ export default function PrivacyPage() {
         <p>
           Your name, email address, the topic you picked and the message you wrote. It is stored so
           there is a record of the enquiry, and emailed to the studio so it can be answered. That
-          is the whole of it — there is no newsletter, and the address is not added to any list.
+          is the whole of it. Sending an enquiry does not put you on the newsletter, which is a
+          separate list you have to join yourself.
         </p>
 
-        <h3>If you leave a comment on a journal post</h3>
+        <h3>If you join the newsletter</h3>
         <p>
-          Your name, your email address and the comment itself. The name and comment are shown
-          publicly once approved. <strong>Your email address is never published</strong> — it
-          exists so you can be contacted about the comment, and nothing else.
-        </p>
-
-        <h3>If you like a comment</h3>
-        <p>
-          To stop the same person liking a comment repeatedly, the site derives a one-way hash from
-          your IP address and browser, salted with a secret it holds. The hash is stored; your IP
-          address is not. The value cannot be reversed to identify you, and it is not used for
-          anything except counting that one like.
+          Your email address, the date you signed up and which form you used. The date and the
+          form are kept as the record of when and where you agreed, so there is an answer if you
+          ever ask. The list is used for the monthly newsletter and nothing else. It is never sold,
+          shared or rented, and every send carries a one-click unsubscribe.
         </p>
 
         <h3>Ordinary server records</h3>
@@ -85,9 +80,10 @@ export default function PrivacyPage() {
           never sent to a server. Clearing your browser data removes it.
         </p>
         <p>
-          The spam protection on the contact and comment forms is Cloudflare Turnstile, which may
-          set a cookie strictly to tell a person from a bot. It loads only when you actually open a
-          form, not on ordinary pages, and it is not used for tracking or advertising.
+          The spam protection on the contact and newsletter forms is Cloudflare Turnstile, which
+          may set a cookie strictly to tell a person from a bot. It loads only once you actually
+          use one of those forms, not on ordinary pages, and it is not used for tracking or
+          advertising.
         </p>
 
         <h2>Who else handles it</h2>
@@ -112,9 +108,9 @@ export default function PrivacyPage() {
         <h2>How long it is kept</h2>
         <p>
           Contact enquiries are kept while they are useful — an active conversation, or a record of
-          work discussed — and deleted once they are not. Comments stay as long as the post they
-          belong to, or until you ask for yours to be removed. Like-hashes have no expiry but
-          identify nobody.
+          work discussed — and deleted once they are not. Newsletter addresses are kept until you
+          unsubscribe. An unsubscribed address is marked as such rather than deleted outright, so a
+          later import cannot quietly put you back on the list; ask and it is removed for good.
         </p>
 
         <h2>Your choices</h2>

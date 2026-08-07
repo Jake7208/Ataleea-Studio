@@ -6,6 +6,7 @@ import { ContactTrigger } from '@/components/ContactPanel'
 import RetainersSection from '@/components/RetainersSection'
 import { ArrowRight } from '@/components/icons'
 import { services } from '@/lib/services'
+import { reveal } from '@/lib/reveal'
 
 export const metadata: Metadata = {
   title: 'Services',
@@ -42,14 +43,14 @@ export default function ServicesPage() {
   return (
     <>
       <section className="page-intro container">
-        <div data-reveal>
+        <div {...reveal}>
           <p className="eyebrow">Services</p>
           <h1>Three things, done properly.</h1>
         </div>
       </section>
 
       <section className="section container">
-        <div className="statement" data-reveal>
+        <div className="statement" {...reveal}>
           <div>
             <h2>Most of this trade is sold as a package. I would rather quote the work.</h2>
           </div>
@@ -74,12 +75,12 @@ export default function ServicesPage() {
         <section key={service.slug} id={service.slug} className="service-section">
           <div className="container">
             <div className="service-detail">
-              <div className="service-detail-head" data-reveal>
+              <div className="service-detail-head" {...reveal}>
                 <span className="service-detail-num">{service.number}</span>
                 <h2>{service.title}</h2>
               </div>
 
-              <div className="service-detail-body" data-reveal>
+              <div className="service-detail-body" {...reveal}>
                 <p className="lead">{service.summary}</p>
 
                 {service.detail.map((paragraph) => (
@@ -106,7 +107,7 @@ export default function ServicesPage() {
       {/* ── PROCESS ───────────────────────────────────────────────────────── */}
       <section className="section section-alt">
         <div className="container">
-          <div className="section-head" data-reveal>
+          <div className="section-head" {...reveal}>
             <div>
               <span className="eyebrow">How it runs</span>
               <h2>From first email to launch.</h2>
@@ -115,7 +116,7 @@ export default function ServicesPage() {
 
           <div className="process-grid reveal-group">
             {process.map(({ number, title, body }) => (
-              <div key={number} className="process-step" data-reveal>
+              <div key={number} className="process-step" {...reveal}>
                 <span className="num">{number}</span>
                 <h3>{title}</h3>
                 <p>{body}</p>
@@ -130,7 +131,7 @@ export default function ServicesPage() {
       <RetainersSection />
 
       <section className="section container">
-        <div className="statement" data-reveal>
+        <div className="statement" {...reveal}>
           <div>
             <h2>Not sure which one you need?</h2>
           </div>

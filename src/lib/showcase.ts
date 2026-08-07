@@ -54,8 +54,8 @@ export function pickShowcase(
 
   if (entry) {
     showcases.push({
-      href: `/blog/${entry.slug}`,
-      eyebrow: 'Latest journal entry',
+      href: `/newsroom/${entry.slug}`,
+      eyebrow: 'Latest news',
       title: entry.title,
       // entries carry no roles or year, so the date stands in as the same "when" cue
       meta: formatDate(entry.publishedAt),

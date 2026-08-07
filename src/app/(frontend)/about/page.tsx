@@ -4,11 +4,12 @@ import React from 'react'
 
 import { siteConfig } from '@/site.config'
 import { ArrowRight } from '@/components/icons'
+import { reveal } from '@/lib/reveal'
 
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Ataleea is a one person studio building websites and local search for construction companies and the trades around them.',
+    'Ataleea is a one person studio building websites for people with work worth showing. Portfolios, practices and independent businesses.',
 }
 
 // how the studio works, rather than what it sells — the services section
@@ -35,29 +36,28 @@ export default function AboutPage() {
   return (
     <>
       <section className="page-intro container">
-        <div data-reveal>
+        <div {...reveal}>
           <p className="eyebrow">About</p>
-          <h1>A studio for people who build things.</h1>
+          <h1>A studio for work worth showing.</h1>
         </div>
       </section>
 
-      <section className="section container">
-        <div className="statement" data-reveal>
+      <section className="section section-dark container">
+        <div className="statement" {...reveal}>
           <div>
             <h2>Ataleea is a small studio, and I run it.</h2>
           </div>
           <div>
             <p>
-              I build websites for construction companies and the trades around them. Businesses
-              whose strongest argument is the work itself, photographed properly and put somewhere
-              a client can actually find it.
+              I build websites for people whose strongest argument is the work itself. Finished
+              projects, research, results. Shown properly, and put somewhere the right person can
+              actually find it.
             </p>
             <p>
               Most of the people I work with are very good at what they do and badly served by the
               site representing it. A template flattens years of craft into a stock photo and a
-              contact form. I start from the other end: the projects you have finished, the
-              materials you chose, the detail you would point at if the client were standing next
-              to you.
+              contact form. I start from the other end: the work you have finished, the decisions
+              you made, the detail you would point at if the client were standing next to you.
             </p>
             <p>
               That is the whole idea. Show the work, make it findable, and keep it current once
@@ -68,7 +68,7 @@ export default function AboutPage() {
       </section>
 
       <section className="section container">
-        <div className="section-head" data-reveal>
+        <div className="section-head" {...reveal}>
           <div>
             <span className="eyebrow">How I work</span>
             <h2>Three habits, not a process diagram.</h2>
@@ -77,7 +77,7 @@ export default function AboutPage() {
 
         <div className="hero-index reveal-group">
           {principles.map(({ number, title, body }) => (
-            <div key={number} className="hero-index-item" data-reveal>
+            <div key={number} className="hero-index-item" {...reveal}>
               <span className="num">{number}</span>
               <h3>{title}</h3>
               <p>{body}</p>
@@ -86,16 +86,18 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* No lime block here, unlike /services and the home page. About is the
+          shortest page on the site, and a full lime section on it put the
+          accent past 19% on its own — the closing band is enough. */}
       <section className="section container">
-        <div className="statement" data-reveal>
+        <div className="statement" {...reveal}>
           <div>
             <h2>What that looks like in practice.</h2>
           </div>
           <div>
             <p>
-              Three things, mostly: a site built around your completed work, a Google Business
-              Profile set up properly so the people searching your trade in your area find you
-              first, and someone keeping both current afterwards.
+              Three things, mostly: a site built around your completed work, local search set up
+              properly if you serve an area, and someone keeping it all current afterwards.
             </p>
             <p>
               If you want the detail on what is included, what it costs and how long it takes,
@@ -119,7 +121,7 @@ export default function AboutPage() {
           This block is the other channel: a plain address for people who would
           rather write than fill anything in. */}
       <section className="section container">
-        <div className="about-studio" data-reveal>
+        <div className="about-studio" {...reveal}>
           <div>
             <span className="eyebrow">Studio</span>
             <p className="lead">

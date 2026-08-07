@@ -27,7 +27,9 @@ const eslintConfig = [
     },
   },
   {
-    ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],
+    // .next-local/ is where `npm run build:local` puts its output — same
+    // generated bundles as .next/, so the same reason to skip them.
+    ignores: ['.next/', '.next-local/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],
   },
 ]
 

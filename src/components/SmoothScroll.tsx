@@ -46,9 +46,15 @@ export default function SmoothScroll() {
       if (disposed) return
 
       const lenis = new LenisCtor({
-        duration: 1,
-        // easeOutCubic — the same curve the CSS transitions use
-        easing: (t: number) => 1 - Math.pow(1 - t, 3),
+        // 0.7 rather than 1. A full second of glide reads as the page lagging
+        // behind the wheel: you stop scrolling and it keeps going, which is the
+        // thing people mean when they call smooth scrolling floaty.
+        duration: 0.7,
+        // easeOutQuint, matching the --ease curve the CSS transitions now use.
+        // Steeper than the cubic it replaces, so most of the distance is covered
+        // early and the tail is short: it arrives fast and settles rather than
+        // drifting in.
+        easing: (t: number) => 1 - Math.pow(1 - t, 5),
       })
       lenisRef.current = lenis
 
@@ -95,14 +101,12 @@ export default function SmoothScroll() {
 
     document.addEventListener('click', onClick, true)
 
-    // overlays (lightbox, slide panel) lock the page by class; Lenis has to be
-    // told, or it keeps scrolling the page behind them
+    // the slide panel locks the page by class; Lenis has to be told, or it
+    // keeps scrolling the page behind it
     function syncLock() {
       const lenis = lenisRef.current
       if (!lenis) return
-      const { classList } = document.documentElement
-      const locked = classList.contains('lightbox-open') || classList.contains('is-scroll-locked')
-      if (locked) lenis.stop()
+      if (document.documentElement.classList.contains('is-scroll-locked')) lenis.stop()
       else lenis.start()
     }
 

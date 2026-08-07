@@ -4,35 +4,42 @@ import React from 'react'
 import CaseStudyGrid, { type CaseStudyGridPost } from '@/components/CaseStudyGrid'
 import ImageSlot from '@/components/ImageSlot'
 import { ArrowRight } from '@/components/icons'
+import { reveal } from '@/lib/reveal'
 
 // Shown until case studies are published — mirrors the real card anatomy so the
 // section keeps its shape. Delete once the collection has content.
 const placeholders = [
   {
     label: 'Project 01 cover',
-    spec: 'Finished commercial build, exterior. Wide, straight on.',
-    meta: 'Commercial build, 2026',
+    spec: 'Composed cover, 1600 × 1200. Site screenshot on a background, not a raw capture.',
+    tag: 'Project',
+    year: '2026',
+    roles: 'Design & build',
     title: 'Project one',
   },
   {
     label: 'Project 02 cover',
-    spec: 'Structural or trade work mid-build. Show the craft.',
-    meta: 'Structural, 2026',
+    spec: 'Same canvas and same margins as the others. The set has to read as one system.',
+    tag: 'Project',
+    year: '2026',
+    roles: 'Design & build',
     title: 'Project two',
   },
   {
     label: 'Project 03 cover',
-    spec: 'Interior or fit-out, finished. Warm, well lit.',
-    meta: 'Interiors, 2026',
+    spec: 'Vary the background, never the framing. That is what keeps the row even.',
+    tag: 'Project',
+    year: '2026',
+    roles: 'Identity & site',
     title: 'Project three',
   },
 ]
 
 /** Selected case studies on the home page. */
 export const WorkShowcaseSection: React.FC<{ posts: CaseStudyGridPost[] }> = ({ posts }) => (
-  <section className="section section-alt">
+  <section className="section section-dark">
     <div className="container">
-      <div className="section-head" data-reveal>
+      <div className="section-head" {...reveal}>
         <div>
           <span className="eyebrow">Selected work</span>
           <h2>Recent projects.</h2>
@@ -49,17 +56,16 @@ export const WorkShowcaseSection: React.FC<{ posts: CaseStudyGridPost[] }> = ({ 
       ) : (
         <div className="gallery-grid reveal-group">
           {placeholders.map((item) => (
-            <div key={item.label} className="gallery-item" data-reveal>
+            <div key={item.label} className="gallery-item" {...reveal}>
               <div className="work-card">
-                <ImageSlot label={item.label} spec={item.spec} ratio="3 / 2" />
+                <ImageSlot label={item.label} spec={item.spec} ratio="4 / 3" />
                 <div className="work-card-meta">
-                  <p className="work-card-info">{item.meta}</p>
-                  <h3 className="work-card-title">
-                    <span>{item.title}</span>
-                    <span className="work-card-arrow" aria-hidden="true">
-                      <ArrowRight />
-                    </span>
-                  </h3>
+                  <div className="work-card-line">
+                    <span className="work-card-tag">{item.tag}</span>
+                    <span className="work-card-year">{item.year}</span>
+                  </div>
+                  <h3 className="work-card-title">{item.title}</h3>
+                  <p className="work-card-info">{item.roles}</p>
                 </div>
               </div>
             </div>

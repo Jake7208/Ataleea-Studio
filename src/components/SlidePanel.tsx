@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { lockScroll, unlockScroll } from '@/lib/scroll-lock'
 
@@ -24,6 +24,14 @@ export default function SlidePanel({ open, onClose, labelledBy, children }: Slid
   const panelRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const restoreTo = useRef<HTMLElement | null>(null)
+  /**
+   * Widens the panel from a column to roughly two thirds of the viewport.
+   * Kept across opens, not reset on close — someone who wants the room once
+   * generally wants it again, and the panel stays mounted anyway. Below the
+   * mobile breakpoint the panel is already full width, so the control is
+   * hidden there rather than doing nothing.
+   */
+  const [wide, setWide] = useState(false)
 
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -76,7 +84,10 @@ export default function SlidePanel({ open, onClose, labelledBy, children }: Slid
   }, [open, onKeyDown])
 
   return (
-    <div className={`slide-panel-root ${open ? 'is-open' : ''}`} inert={!open}>
+    <div
+      className={`slide-panel-root ${open ? 'is-open' : ''} ${wide ? 'is-wide' : ''}`}
+      inert={!open}
+    >
       <div className="slide-panel-backdrop" onClick={onClose} />
 
       <div
@@ -87,9 +98,24 @@ export default function SlidePanel({ open, onClose, labelledBy, children }: Slid
         aria-labelledby={labelledBy}
         data-lenis-prevent
       >
-        <button ref={closeRef} type="button" className="slide-panel-close" onClick={onClose}>
-          Close
-        </button>
+        <div className="slide-panel-actions">
+          <button
+            type="button"
+            className="slide-panel-action slide-panel-expand"
+            aria-pressed={wide}
+            onClick={() => setWide((w) => !w)}
+          >
+            {wide ? 'Collapse' : 'Expand'}
+          </button>
+          <button
+            ref={closeRef}
+            type="button"
+            className="slide-panel-action slide-panel-close"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
         <div className="slide-panel-body">{children}</div>
       </div>
     </div>

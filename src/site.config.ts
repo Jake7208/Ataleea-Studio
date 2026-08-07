@@ -17,7 +17,7 @@ export const siteConfig = {
 
   /** Default meta description for the whole site. */
   description:
-    'Websites designed and built for construction companies and the trades around them. Drawn from scratch rather than dropped into a template, and set up to be found on local search.',
+    'Websites for people with work worth showing. Portfolios, practices and independent businesses, each one drawn from scratch rather than dropped into a template.',
 
   /** The person (or studio) behind the site — used as the default post author. */
   author: 'Ataleea LLC',
@@ -42,6 +42,6 @@ export const siteConfig = {
     { href: '/work', label: 'Work' },
     { href: '/services', label: 'Services' },
     { href: '/about', label: 'About' },
-    { href: '/blog', label: 'Journal' },
+    { href: '/newsroom', label: 'Newsroom' },
   ],
 } as const

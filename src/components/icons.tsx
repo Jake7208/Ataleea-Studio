@@ -71,11 +71,18 @@ export function Contrast({ className, ...props }: IconProps) {
   )
 }
 
-// Outline heart that fills with `currentColor` when its button carries `.is-liked`.
-export function Heart({ className, ...props }: IconProps) {
+/* The newsroom control icons. Deliberately the conventional shapes rather than
+   drawn ones — a funnel means filter and a two-headed arrow means sort to
+   everyone who has used a website, and a bespoke mark for either would be a
+   puzzle in a place nobody wants one. Hairline stroke and currentColor keep
+   them in the same family as the arrows above. */
+
+export function Funnel({ className, ...props }: IconProps) {
   return (
     <svg
-      className={cx('heart-icon', className)}
+      className={cx('control-icon', className)}
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -87,7 +94,99 @@ export function Heart({ className, ...props }: IconProps) {
       focusable="false"
       {...props}
     >
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" />
+      <path d="M3 5h18l-7 8.2V20l-4 1.6v-8.4L3 5Z" />
+    </svg>
+  )
+}
+
+/** Two-headed vertical arrow — the standard "change the order" mark. */
+export function SortArrows({ className, ...props }: IconProps) {
+  return (
+    <svg
+      className={cx('control-icon', className)}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      {...props}
+    >
+      <path d="M7 3v18m0 0-3.5-3.5M7 21l3.5-3.5M17 21V3m0 0-3.5 3.5M17 3l3.5 3.5" />
+    </svg>
+  )
+}
+
+/** Rotated by CSS when its menu is open, so the mark states the menu's state. */
+export function ChevronDown({ className, ...props }: IconProps) {
+  return (
+    <svg
+      className={cx('chevron-icon', className)}
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      {...props}
+    >
+      <path d="m5 9 7 7 7-7" />
+    </svg>
+  )
+}
+
+/** Chain link — the conventional "copy this address" mark. */
+export function LinkIcon({ className, ...props }: IconProps) {
+  return (
+    <svg
+      className={cx('control-icon', className)}
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      {...props}
+    >
+      <path d="M10 13.5a4 4 0 0 0 6 .5l3-3a4 4 0 0 0-5.7-5.7L11.6 7M14 10.5a4 4 0 0 0-6-.5l-3 3a4 4 0 0 0 5.7 5.7l1.7-1.7" />
+    </svg>
+  )
+}
+
+/** Marks the chosen row in a menu. The row also carries aria-checked. */
+export function Check({ className, ...props }: IconProps) {
+  return (
+    <svg
+      className={cx('check-icon', className)}
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+      {...props}
+    >
+      <path d="m4 12.5 5 5L20 6.5" />
     </svg>
   )
 }

@@ -8,11 +8,10 @@ backend plumbing and page structure is wired up; the design and content are your
 | Piece | Where | Notes |
 | --- | --- | --- |
 | Case studies | `collections/CaseStudies.ts` → `/work`, `/work/[slug]` | Drafts, tags, credits, text + media blocks, tag filter bar |
-| Blog | `collections/Blog.ts` → `/blog`, `/blog/[slug]` | Drafts, Lexical rich text, tags, excerpts |
-| Gallery | `collections/Media.ts` → `/gallery` | Tag-filtered grid of tagged uploads + lightbox |
+| Newsroom | `collections/Blog.ts` → `/newsroom`, `/newsroom/[slug]` | Drafts, Lexical rich text, tags, excerpts |
 | Testimonials | `collections/Testimonials.ts` → home page | Drag-to-order in admin, featured flag |
-| Comments | `collections/Comments.ts` | On posts + case studies; moderation, likes, ISR revalidation |
-| Contact form | `collections/ContactSubmissions.ts` → `/contact` | Saves to DB, emails you via Resend |
+| Contact form | `collections/ContactSubmissions.ts` → slide-out panel | Saves to DB, emails you via Resend |
+| Newsletter | `collections/Subscribers.ts` → footer form | Public `/subscribe` endpoint, Turnstile-guarded |
 | Admin panel | `/admin` | Payload 3, MongoDB, optional R2/S3 media storage |
 
 Deliberately **not** included (add per site): CSS beyond a tiny reset, fonts, animations
@@ -40,13 +39,8 @@ Deliberately **not** included (add per site): CSS beyond a tiny reset, fonts, an
 
 - **Types**: `src/payload-types.ts` is generated. After changing any collection, run
   `pnpm generate:types` (and `pnpm generate:importmap` if you add admin components).
-- **Rendering**: public pages are static with `revalidate = 60`; comment approval
-  triggers an immediate revalidate of the affected post. The gallery renders
-  per-request because of its `?tag=` filter.
-- **Comment likes** use a custom endpoint (`POST /api/comments/:id/like`) and
-  localStorage to prevent double-likes.
-- **Gallery membership**: an upload appears in the gallery only if it has at least one
-  tag; the `featured` checkbox marks a hero photo if you build one into the home page.
+- **Rendering**: public pages are static with `revalidate = 60`; publishing a document
+  triggers an immediate revalidate of the pages that list it.
 - **Docker**: `docker-compose up` gives you a local MongoDB + the dev server (set
   `DATABASE_URL=mongodb://mongo/your-db-name`). The `Dockerfile` needs
   `output: 'standalone'` in `next.config.ts` if you deploy with it.

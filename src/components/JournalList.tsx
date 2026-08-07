@@ -4,6 +4,7 @@ import React from 'react'
 import type { Blog } from '@/payload-types'
 import Media from '@/components/Media'
 import { mediaInfo } from '@/lib/media'
+import { reveal } from '@/lib/reveal'
 
 /** Only the fields the list renders — lets pages query with `select`. */
 export type JournalListPost = Pick<
@@ -31,7 +32,7 @@ export default function JournalList({ posts }: { posts: JournalListPost[] }) {
             })
           : null
         return (
-          <Link key={post.id} href={`/blog/${post.slug}`} className="journal-row" data-reveal>
+          <Link key={post.id} href={`/newsroom/${post.slug}`} className="journal-row" {...reveal}>
             {media && (
               <div className="journal-thumb">
                 <Media

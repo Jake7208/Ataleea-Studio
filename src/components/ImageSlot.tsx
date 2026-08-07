@@ -1,4 +1,5 @@
 import React from 'react'
+import { preload } from 'react-dom'
 
 import type { Media } from '@/payload-types'
 import AmbientVideo from '@/components/AmbientVideo'
@@ -20,7 +21,20 @@ type ImageSlotProps = {
   media?: string | Partial<Media> | null
   /** Above the fold, pass 'eager' — the hero shouldn't wait on lazy loading. */
   loading?: 'lazy' | 'eager'
-  /** Rendered width hint for the srcSet, e.g. '100vw'. */
+  /**
+   * Only for the one image that is the page's Largest Contentful Paint. `eager`
+   * alone just means "don't defer"; it still starts at the low priority the
+   * browser gives every image, behind the stylesheet and the scripts. This is
+   * what moves it to the front of that queue, and it is worth nothing if more
+   * than one image on the page claims it.
+   */
+  fetchPriority?: 'high' | 'low' | 'auto'
+  /**
+   * Rendered width hint for the srcSet, e.g. '100vw'. Worth getting right: this
+   * is what the browser picks a candidate with, and it picks before it knows
+   * anything about your layout, so an over-stated value is silently paid for in
+   * bytes on every load.
+   */
   sizes?: string
 }
 
@@ -39,11 +53,20 @@ export default function ImageSlot({
   className = '',
   media,
   loading = 'lazy',
+  fetchPriority,
   sizes = '100vw',
 }: ImageSlotProps) {
   const info = mediaInfo(media)
 
   if (info) {
+    if (loading === 'eager') {
+      preload(info.url, {
+        as: 'image',
+        fetchPriority: 'high',
+        imageSrcSet: info.srcSet ?? undefined,
+        imageSizes: info.srcSet ? sizes : undefined,
+      })
+    }
     return info.mime?.startsWith('video/') ? (
       // Layout artwork, not a clip anyone came to watch — the same treatment
       // every other video on the site gets, rather than a second hand-rolled
@@ -61,7 +84,8 @@ export default function ImageSlot({
         width={info.width ?? undefined}
         height={info.height ?? undefined}
         loading={loading}
-        decoding="async"
+        fetchPriority={fetchPriority}
+        decoding={loading === 'eager' ? 'sync' : 'async'}
       />
     )
   }

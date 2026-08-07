@@ -2,6 +2,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import { ArrowRight } from '@/components/icons'
+import { reveal } from '@/lib/reveal'
 
 // No `metadata` export here — Next ignores it on not-found.tsx. The title and
 // the noindex are set by the [...notFound] catch-all that renders this.
@@ -9,14 +10,14 @@ export default function NotFound() {
   return (
     <>
       <section className="page-intro container">
-        <div data-reveal>
+        <div {...reveal}>
           <p className="eyebrow">404</p>
           <h1>That page isn&rsquo;t here.</h1>
         </div>
       </section>
 
       <section className="section container">
-        <div className="statement" data-reveal>
+        <div className="statement" {...reveal}>
           <div>
             <h2>It may have moved, or never existed.</h2>
           </div>

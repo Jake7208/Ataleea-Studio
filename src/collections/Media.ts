@@ -9,10 +9,10 @@ export const Media: CollectionConfig = {
     // Without this the list view labels every row with its Mongo id. Alt text is
     // required on every upload, so it always has something to show.
     useAsTitle: 'alt',
-    defaultColumns: ['filename', 'alt', 'tags', 'featured', 'updatedAt'],
+    defaultColumns: ['filename', 'alt', 'updatedAt'],
     group: 'Library',
     description:
-      'Every image and video on the site lives here. Upload once, then point a case study, journal post or page slot at it.',
+      'Every image and video on the site lives here. Upload once, then point a case study, newsroom post or page slot at it.',
   },
   access: {
     read: () => true,
@@ -31,39 +31,10 @@ export const Media: CollectionConfig = {
         placeholder: 'e.g. Finished timber-framed extension, shot from the garden',
       },
     },
-    {
-      name: 'tags',
-      type: 'relationship',
-      relationTo: 'tags',
-      hasMany: true,
-      admin: {
-        description: 'Tagged images appear in the site gallery, filterable by tag.',
-      },
-    },
-    {
-      name: 'featured',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description:
-          'The most recently updated featured photo fills the full-width gallery band on the homepage.',
-      },
-    },
-    {
-      name: 'description',
-      type: 'textarea',
-      admin: {
-        description: 'Shown next to the image in the gallery lightbox.',
-      },
-    },
-    {
-      name: 'dateTaken',
-      type: 'date',
-      admin: {
-        date: { pickerAppearance: 'dayOnly' },
-        description: 'When the photo was taken — shown in the gallery lightbox.',
-      },
-    },
+    // `tags`, `featured`, `description` and `dateTaken` lived here for the
+    // standalone /gallery page. That page is gone — case studies show the work
+    // now — and nothing else ever read them, so they came out with it. An
+    // upload is a file and its alt text again.
   ],
   upload: {
     // Nothing on the site renders a PDF or a zip, so keep them out of the picker
